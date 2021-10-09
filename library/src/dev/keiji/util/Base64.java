@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2021 ARIYAMA Keiji
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package dev.keiji.util;
 
 import java.io.ByteArrayInputStream;
@@ -5,6 +21,12 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 
+/**
+ * Utilities for encoding and decoding the Base64 representation of binary data.
+ *
+ * See RFC https://datatracker.ietf.org/doc/html/rfc4648
+ * Special thanks to http://www5d.biglobe.ne.jp/stssk/rfc/rfc4648j.html
+ */
 public class Base64 {
 
     private Base64() {
@@ -76,30 +98,50 @@ public class Base64 {
         TABLE_DECODE_URL_SAFE['_'] = 63;
     }
 
-    public static String encode(byte[] byteArray) {
-        return Encoder.encode(byteArray, TABLE_ENCODE);
+    /**
+     * Base64-encode the given data and return a newly allocated String with the result.
+     *
+     * @param input the data to encode
+     */
+    public static String encode(byte[] input) {
+        return Encoder.encode(input, TABLE_ENCODE);
     }
 
-    public static String encodeUrlSafe(byte[] byteArray) {
-        return Encoder.encode(byteArray, TABLE_ENCODE_URL_SAFE);
+    /**
+     * Base64 url and filename safe encode the given data and return a newly allocated String with the result.
+     *
+     * @param input the data to encode
+     */
+    public static String encodeUrlSafe(byte[] input) {
+        return Encoder.encode(input, TABLE_ENCODE_URL_SAFE);
     }
 
-    public static byte[] decode(String encoded) {
-        return Decoder.decode(encoded, TABLE_DECODE);
+    /**
+     * Decode the Base64-encoded data in input and return the data in a new byte array.
+     *
+     * @param input the data to decode
+     */
+    public static byte[] decode(String input) {
+        return Decoder.decode(input, TABLE_DECODE);
     }
 
-    public static byte[] decodeUrlSafe(String encoded) {
-        return Decoder.decode(encoded, TABLE_DECODE_URL_SAFE);
+    /**
+     * Decode the Base64 url and filename safe encoded data in input and return the data in a new byte array.
+     *
+     * @param input the data to decode
+     */
+    public static byte[] decodeUrlSafe(String input) {
+        return Decoder.decode(input, TABLE_DECODE_URL_SAFE);
     }
 
     private static class Encoder {
 
-        public static String encode(byte[] byteArray, char[] tableEncode) {
+        public static String encode(byte[] input, char[] tableEncode) {
             StringBuilder result = new StringBuilder();
 
             byte[] bucket = new byte[INTEGER_LENGTH_IN_BYTES];
 
-            ByteArrayInputStream bis = new ByteArrayInputStream(byteArray);
+            ByteArrayInputStream bis = new ByteArrayInputStream(input);
 
             int len;
             while ((len = bis.read(bucket, 0, BUCKET_SIZE)) > 0) {
@@ -146,20 +188,20 @@ public class Base64 {
 
     private static class Decoder {
 
-        public static byte[] decode(String encoded, int[] tableDecode) {
-            if (encoded == null || encoded.length() == 0) {
+        public static byte[] decode(String input, int[] tableDecode) {
+            if (input == null || input.length() == 0) {
                 return new byte[0];
             }
-            if (encoded.length() % 4 != 0) {
+            if (input.length() % 4 != 0) {
                 throw new IllegalArgumentException("Decoded string length must be divisible by 4.");
             }
 
             int padLength = 0;
-            if (encoded.indexOf(PAD) >= 0) {
-                padLength = encoded.length() - encoded.indexOf(PAD);
+            if (input.indexOf(PAD) >= 0) {
+                padLength = input.length() - input.indexOf(PAD);
             }
 
-            String padStrippedStr = encoded.substring(0, encoded.length() - padLength);
+            String padStrippedStr = input.substring(0, input.length() - padLength);
             int actualPadLength = padLength - (padLength / 4 * 4);
 
             int resultLength = ((padStrippedStr.length() + actualPadLength) * BIT_WIDTH) / 8 - actualPadLength;
@@ -196,10 +238,10 @@ public class Base64 {
                 }
             }
 
-            byte[] bytesArray = bb.array();
+            byte[] output = bb.array();
             bb.clear();
 
-            return bytesArray;
+            return output;
         }
 
         private static int getTableValue(int[] tableDecode, byte value) {
