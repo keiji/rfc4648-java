@@ -68,4 +68,46 @@ public class Base64Test {
         String result = Base64.encode(TEST_VECTOR6_DECODED);
         Assert.assertEquals(TEST_VECTOR6_ENCODED, result);
     }
+
+    @Test
+    public void decodeTest0() {
+        byte[] result = Base64.decode(TEST_VECTOR0_ENCODED);
+        Assert.assertArrayEquals(TEST_VECTOR0_DECODED, result);
+    }
+
+    @Test
+    public void decodeTest1() {
+        byte[] result = Base64.decode(TEST_VECTOR1_ENCODED);
+        Assert.assertArrayEquals(TEST_VECTOR1_DECODED, result);
+    }
+
+    @Test
+    public void decodeTest2() {
+        byte[] result = Base64.decode(TEST_VECTOR2_ENCODED);
+        Assert.assertArrayEquals(TEST_VECTOR2_DECODED, result);
+    }
+
+    @Test
+    public void decodeTest3() {
+        byte[] result = Base64.decode(TEST_VECTOR3_ENCODED);
+        Assert.assertArrayEquals(TEST_VECTOR3_DECODED, result);
+    }
+
+    @Test
+    public void decodeTest4() {
+        byte[] result = Base64.decode(TEST_VECTOR4_ENCODED);
+        Assert.assertArrayEquals(TEST_VECTOR4_DECODED, result);
+    }
+
+    @Test
+    public void decodeTest5() {
+        byte[] result = Base64.decode(TEST_VECTOR5_ENCODED);
+        Assert.assertArrayEquals(TEST_VECTOR5_DECODED, result);
+    }
+
+    @Test
+    public void decodeTest6() {
+        byte[] result = Base64.decode(TEST_VECTOR6_ENCODED);
+        Assert.assertArrayEquals(TEST_VECTOR6_DECODED, result);
+    }
 }
