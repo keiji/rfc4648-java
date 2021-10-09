@@ -118,6 +118,10 @@ public class Base64 {
     private static class Encoder {
 
         public static String encode(byte[] input, char[] tableEncode) {
+            if (input == null) {
+                throw new IllegalArgumentException("Input data must not be null.");
+            }
+
             StringBuilder result = new StringBuilder();
 
             byte[] bucket = new byte[INTEGER_LENGTH_IN_BYTES];
@@ -168,11 +172,14 @@ public class Base64 {
     private static class Decoder {
 
         public static byte[] decode(String input, int[] tableDecode) {
-            if (input == null || input.length() == 0) {
+            if (input == null) {
+                throw new IllegalArgumentException("Input string must not be null.");
+            }
+            if (input.length() == 0) {
                 return new byte[0];
             }
             if (input.length() % 4 != 0) {
-                throw new IllegalArgumentException("Decoded string length must be divisible by 4.");
+                throw new IllegalArgumentException("Input string length must be divisible by 4.");
             }
 
             int padLength = 0;

@@ -73,6 +73,16 @@ public class Base64Test {
     }
 
     @Test
+    public void encodeTestException0() {
+        try {
+            String result = Base64.encode(null);
+            Assertions.fail();
+        } catch (IllegalArgumentException exception) {
+            System.out.println(exception.getMessage());
+        }
+    }
+
+    @Test
     public void decodeTest0() {
         byte[] result = Base64.decode(TEST_VECTOR0_ENCODED);
         Assertions.assertArrayEquals(TEST_VECTOR0_DECODED, result);
@@ -121,6 +131,16 @@ public class Base64Test {
     public void decodeTest7() {
         byte[] result = Base64.decode(TEST_VECTOR7_ENCODED);
         Assertions.assertArrayEquals(TEST_VECTOR7_DECODED, result);
+    }
+
+    @Test
+    public void decodeTestException0() {
+        try {
+            byte[] result = Base64.decode(null);
+            Assertions.fail();
+        } catch (IllegalArgumentException exception) {
+            System.out.println(exception.getMessage());
+        }
     }
 
     @Test
