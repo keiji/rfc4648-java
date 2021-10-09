@@ -1,8 +1,7 @@
 package dev.keiji.util;
 
-import dev.keiji.util.Base64;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Random;
@@ -33,86 +32,86 @@ public class Base64Test {
     @Test
     public void encodeTest0() {
         String result = Base64.encode(TEST_VECTOR0_DECODED);
-        Assert.assertEquals(TEST_VECTOR0_ENCODED, result);
+        Assertions.assertEquals(TEST_VECTOR0_ENCODED, result);
     }
 
     @Test
     public void encodeTest1() {
         String result = Base64.encode(TEST_VECTOR1_DECODED);
-        Assert.assertEquals(TEST_VECTOR1_ENCODED, result);
+        Assertions.assertEquals(TEST_VECTOR1_ENCODED, result);
     }
 
 
     @Test
     public void encodeTest2() {
         String result = Base64.encode(TEST_VECTOR2_DECODED);
-        Assert.assertEquals(TEST_VECTOR2_ENCODED, result);
+        Assertions.assertEquals(TEST_VECTOR2_ENCODED, result);
     }
 
     @Test
     public void encodeTest3() {
         String result = Base64.encode(TEST_VECTOR3_DECODED);
-        Assert.assertEquals(TEST_VECTOR3_ENCODED, result);
+        Assertions.assertEquals(TEST_VECTOR3_ENCODED, result);
     }
 
     @Test
     public void encodeTest4() {
         String result = Base64.encode(TEST_VECTOR4_DECODED);
-        Assert.assertEquals(TEST_VECTOR4_ENCODED, result);
+        Assertions.assertEquals(TEST_VECTOR4_ENCODED, result);
     }
 
     @Test
     public void encodeTest5() {
         String result = Base64.encode(TEST_VECTOR5_DECODED);
-        Assert.assertEquals(TEST_VECTOR5_ENCODED, result);
+        Assertions.assertEquals(TEST_VECTOR5_ENCODED, result);
     }
 
     @Test
     public void encodeTest6() {
         String result = Base64.encode(TEST_VECTOR6_DECODED);
-        Assert.assertEquals(TEST_VECTOR6_ENCODED, result);
+        Assertions.assertEquals(TEST_VECTOR6_ENCODED, result);
     }
 
     @Test
     public void decodeTest0() {
         byte[] result = Base64.decode(TEST_VECTOR0_ENCODED);
-        Assert.assertArrayEquals(TEST_VECTOR0_DECODED, result);
+        Assertions.assertArrayEquals(TEST_VECTOR0_DECODED, result);
     }
 
     @Test
     public void decodeTest1() {
         byte[] result = Base64.decode(TEST_VECTOR1_ENCODED);
-        Assert.assertArrayEquals(TEST_VECTOR1_DECODED, result);
+        Assertions.assertArrayEquals(TEST_VECTOR1_DECODED, result);
     }
 
     @Test
     public void decodeTest2() {
         byte[] result = Base64.decode(TEST_VECTOR2_ENCODED);
-        Assert.assertArrayEquals(TEST_VECTOR2_DECODED, result);
+        Assertions.assertArrayEquals(TEST_VECTOR2_DECODED, result);
     }
 
     @Test
     public void decodeTest3() {
         byte[] result = Base64.decode(TEST_VECTOR3_ENCODED);
-        Assert.assertArrayEquals(TEST_VECTOR3_DECODED, result);
+        Assertions.assertArrayEquals(TEST_VECTOR3_DECODED, result);
     }
 
     @Test
     public void decodeTest4() {
         byte[] result = Base64.decode(TEST_VECTOR4_ENCODED);
-        Assert.assertArrayEquals(TEST_VECTOR4_DECODED, result);
+        Assertions.assertArrayEquals(TEST_VECTOR4_DECODED, result);
     }
 
     @Test
     public void decodeTest5() {
         byte[] result = Base64.decode(TEST_VECTOR5_ENCODED);
-        Assert.assertArrayEquals(TEST_VECTOR5_DECODED, result);
+        Assertions.assertArrayEquals(TEST_VECTOR5_DECODED, result);
     }
 
     @Test
     public void decodeTest6() {
         byte[] result = Base64.decode(TEST_VECTOR6_ENCODED);
-        Assert.assertArrayEquals(TEST_VECTOR6_DECODED, result);
+        Assertions.assertArrayEquals(TEST_VECTOR6_DECODED, result);
     }
 
     private static byte[] TEST_VECTOR7_DECODED = "fooba".getBytes(StandardCharsets.US_ASCII);
@@ -121,14 +120,14 @@ public class Base64Test {
     @Test
     public void decodeTest7() {
         byte[] result = Base64.decode(TEST_VECTOR7_ENCODED);
-        Assert.assertArrayEquals(TEST_VECTOR7_DECODED, result);
+        Assertions.assertArrayEquals(TEST_VECTOR7_DECODED, result);
     }
 
     @Test
     public void decodeTestException1() {
         try {
             byte[] result = Base64.decode("Zm9vYmE==");
-            Assert.fail();
+            Assertions.fail();
         } catch (IllegalArgumentException exception) {
             System.out.println(exception.getMessage());
         }
@@ -138,7 +137,7 @@ public class Base64Test {
     public void decodeTestException2() {
         try {
             byte[] result = Base64.decode("Zm9vYm.=");
-            Assert.fail();
+            Assertions.fail();
         } catch (IllegalArgumentException exception) {
             System.out.println(exception.getMessage());
         }
@@ -154,7 +153,7 @@ public class Base64Test {
 
             byte[] expectedResult = java.util.Base64.getEncoder().encode(testData);
             byte[] actualResult = Base64.encode(testData).getBytes(StandardCharsets.US_ASCII);
-            Assert.assertArrayEquals(expectedResult, actualResult);
+            Assertions.assertArrayEquals(expectedResult, actualResult);
         }
     }
 
@@ -168,7 +167,7 @@ public class Base64Test {
 
             byte[] expectedResult = java.util.Base64.getUrlEncoder().encode(testData);
             byte[] actualResult = Base64.encodeUrlSafe(testData).getBytes(StandardCharsets.US_ASCII);
-            Assert.assertArrayEquals(expectedResult, actualResult);
+            Assertions.assertArrayEquals(expectedResult, actualResult);
         }
     }
 
@@ -182,7 +181,7 @@ public class Base64Test {
 
             byte[] encoded = java.util.Base64.getEncoder().encode(testData);
             byte[] actualResult = Base64.decode(new String(encoded, StandardCharsets.US_ASCII));
-            Assert.assertArrayEquals(testData, actualResult);
+            Assertions.assertArrayEquals(testData, actualResult);
         }
     }
 
@@ -196,7 +195,7 @@ public class Base64Test {
 
             byte[] encoded = java.util.Base64.getUrlEncoder().encode(testData);
             byte[] actualResult = Base64.decodeUrlSafe(new String(encoded, StandardCharsets.US_ASCII));
-            Assert.assertArrayEquals(testData, actualResult);
+            Assertions.assertArrayEquals(testData, actualResult);
         }
     }
 }
