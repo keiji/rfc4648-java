@@ -146,9 +146,7 @@ public class Base64 {
                 }
 
                 // Clear bucket.
-                for (int i = 0; i < bucket.length - 1; i++) {
-                    bucket[i] = 0;
-                }
+                Arrays.fill(bucket, (byte) 0);
             }
 
             return result.toString();
@@ -214,9 +212,7 @@ public class Base64 {
                 readFromValue(value, bucket);
                 bb.put(bucket, 0, isLastBucket ? BUCKET_SIZE - actualPadLength : BUCKET_SIZE);
 
-                for (int i = 0; i < chars.length - 1; i++) {
-                    chars[i] = 0;
-                }
+                Arrays.fill(chars, (byte) 0);
             }
 
             byte[] output = bb.array();
