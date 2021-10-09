@@ -4,8 +4,6 @@ import java.io.ByteArrayInputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
 
 public class Base64 {
 
@@ -43,37 +41,39 @@ public class Base64 {
             '4', '5', '6', '7', '8', '9', '-', '_',
     };
 
-    private static final HashMap<Character, Integer> MAP_DECODE = new HashMap();
-    private static final HashMap<Character, Integer> MAP_DECODE_URL_SAFE = new HashMap();
+    private static final int[] TABLE_DECODE = new int['z' + 1];
+    private static final int[] TABLE_DECODE_URL_SAFE = new int['z' + 1];
 
     static {
-        // Ignore 0
-        MAP_DECODE.put((char) 0, 0);
-        MAP_DECODE_URL_SAFE.put((char) 0, 0);
+        // Initialize
+        for (int i = 0; i < TABLE_DECODE.length; i++) {
+            TABLE_DECODE[i] = -1;
+            TABLE_DECODE_URL_SAFE[i] = -1;
+        }
 
         // A -> Z
         for (char c = 'A'; c <= 'Z'; c++) {
-            MAP_DECODE.put(c, c - 'A');
-            MAP_DECODE_URL_SAFE.put(c, c - 'A');
+            TABLE_DECODE[c] = c - 'A';
+            TABLE_DECODE_URL_SAFE[c] = c - 'A';
         }
 
         // a -> z
         for (char c = 'a'; c <= 'z'; c++) {
-            MAP_DECODE.put(c, 26 + (c - 'a'));
-            MAP_DECODE_URL_SAFE.put(c, 26 + (c - 'a'));
+            TABLE_DECODE[c] = 26 + (c - 'a');
+            TABLE_DECODE_URL_SAFE[c] = 26 + (c - 'a');
         }
 
         // 0 -> 9
         for (char c = '0'; c <= '9'; c++) {
-            MAP_DECODE.put(c, 52 + (c - '0'));
-            MAP_DECODE_URL_SAFE.put(c, 52 + (c - '0'));
+            TABLE_DECODE[c] = 52 + (c - '0');
+            TABLE_DECODE_URL_SAFE[c] = 52 + (c - '0');
         }
 
-        MAP_DECODE.put('+', 62);
-        MAP_DECODE.put('/', 63);
+        TABLE_DECODE['+'] = 62;
+        TABLE_DECODE['/'] = 63;
 
-        MAP_DECODE_URL_SAFE.put('-', 62);
-        MAP_DECODE_URL_SAFE.put('_', 63);
+        TABLE_DECODE_URL_SAFE['-'] = 62;
+        TABLE_DECODE_URL_SAFE['_'] = 63;
     }
 
     public static String encode(byte[] byteArray) {
@@ -85,11 +85,11 @@ public class Base64 {
     }
 
     public static byte[] decode(String encoded) {
-        return Decoder.decode(encoded, MAP_DECODE);
+        return Decoder.decode(encoded, TABLE_DECODE);
     }
 
     public static byte[] decodeUrlSafe(String encoded) {
-        return Decoder.decode(encoded, MAP_DECODE_URL_SAFE);
+        return Decoder.decode(encoded, TABLE_DECODE_URL_SAFE);
     }
 
     private static class Encoder {
@@ -146,7 +146,7 @@ public class Base64 {
 
     private static class Decoder {
 
-        public static byte[] decode(String encoded, Map<Character, Integer> mapDecode) {
+        public static byte[] decode(String encoded, int[] tableDecode) {
             if (encoded == null || encoded.length() == 0) {
                 return new byte[0];
             }
@@ -176,10 +176,10 @@ public class Base64 {
             while ((bis.read(chars, 0, INTEGER_LENGTH_IN_BYTES)) > 0) {
                 boolean isLastBucket = bis.available() == 0;
 
-                int bucketValue0 = getMapValue(mapDecode, chars[0]);
-                int bucketValue1 = getMapValue(mapDecode, chars[1]);
-                int bucketValue2 = getMapValue(mapDecode, chars[2]);
-                int bucketValue3 = getMapValue(mapDecode, chars[3]);
+                int bucketValue0 = getTableValue(tableDecode, chars[0]);
+                int bucketValue1 = getTableValue(tableDecode, chars[1]);
+                int bucketValue2 = getTableValue(tableDecode, chars[2]);
+                int bucketValue3 = getTableValue(tableDecode, chars[3]);
 
                 int value = (
                         (bucketValue0 << 18)
@@ -202,12 +202,17 @@ public class Base64 {
             return bytesArray;
         }
 
-        private static Integer getMapValue(Map<Character, Integer> mapDecode, byte value) {
-            char key = intToChar(value);
-            if (!mapDecode.containsKey(key)) {
+        private static int getTableValue(int[] tableDecode, byte value) {
+            if (value <= 0) {
+                return 0;
+            }
+
+            char key = (char) value;
+            int tableValue = tableDecode[key];
+            if (tableValue < 0) {
                 throw new IllegalArgumentException(String.format("Detected invalid character %c", key));
             }
-            return mapDecode.get(key);
+            return tableValue;
         }
 
         private static void readFromValue(int value, byte[] bucket) {
@@ -215,10 +220,5 @@ public class Base64 {
             bucket[1] = (byte) ((value & (0XFF << 8)) >>> 8);
             bucket[2] = (byte) ((value & 0XFF));
         }
-
-        private static char intToChar(byte byteValue) {
-            return (char) (((char) byteValue) & 0xFF);
-        }
-
     }
 }
