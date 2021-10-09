@@ -16,8 +16,6 @@ public class Base64 {
 
     private static final int INTEGER_LENGTH_IN_BYTES = 4;
 
-    private static final int MAX_PAD_LENGTH = 2;
-
     private static final char PAD = '=';
 
     private static final char[] TABLE_ENCODE = {
@@ -109,17 +107,21 @@ public class Base64 {
         if (decoded == null || decoded.length() == 0) {
             return new byte[0];
         }
+        if (decoded.length() % 4 != 0) {
+            throw new IllegalArgumentException("Decoded string length must be divisible by 4.");
+        }
 
         int padLength = 0;
         if (decoded.indexOf(PAD) >= 0) {
             padLength = decoded.length() - decoded.indexOf(PAD);
         }
 
-        int resultLength = (decoded.length() * BIT_WIDTH) / 8 - padLength;
+        String padStrippedStr = decoded.substring(0, decoded.length() - padLength);
+        int actualPadLength = padLength - (padLength / 4 * 4);
+
+        int resultLength = ((padStrippedStr.length() + actualPadLength) * BIT_WIDTH) / 8 - actualPadLength;
         ByteBuffer bb = ByteBuffer.allocate(resultLength)
                 .order(ByteOrder.LITTLE_ENDIAN);
-
-        String padStrippedStr = decoded.substring(0, decoded.length() - padLength);
 
         byte[] bucket = new byte[BUCKET_SIZE];
 
@@ -144,7 +146,7 @@ public class Base64 {
             );
 
             readFromValue(value, bucket);
-            bb.put(bucket, 0, isLastBucket ? BUCKET_SIZE - padLength : BUCKET_SIZE);
+            bb.put(bucket, 0, isLastBucket ? BUCKET_SIZE - actualPadLength : BUCKET_SIZE);
 
             for (int i = 0; i < chars.length - 1; i++) {
                 chars[i] = 0;

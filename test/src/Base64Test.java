@@ -1,3 +1,4 @@
+import com.sun.tools.corba.se.idl.InvalidArgument;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -109,5 +110,23 @@ public class Base64Test {
     public void decodeTest6() {
         byte[] result = Base64.decode(TEST_VECTOR6_ENCODED);
         Assert.assertArrayEquals(TEST_VECTOR6_DECODED, result);
+    }
+
+    private static byte[] TEST_VECTOR7_DECODED = "fooba".getBytes(StandardCharsets.US_ASCII);
+    private static String TEST_VECTOR7_ENCODED = "Zm9vYmE=====";
+
+    @Test
+    public void decodeTest7() {
+        byte[] result = Base64.decode(TEST_VECTOR7_ENCODED);
+        Assert.assertArrayEquals(TEST_VECTOR7_DECODED, result);
+    }
+
+    @Test
+    public void decodeTestException() {
+        try {
+            byte[] result = Base64.decode("Zm9vYmE==");
+            Assert.fail();
+        } catch (IllegalArgumentException exception) {
+        }
     }
 }
