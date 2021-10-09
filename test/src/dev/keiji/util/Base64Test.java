@@ -1,8 +1,9 @@
-import com.sun.tools.corba.se.idl.InvalidArgument;
+import dev.keiji.util.Base64;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Random;
 
 public class Base64Test {
 
@@ -122,11 +123,78 @@ public class Base64Test {
     }
 
     @Test
-    public void decodeTestException() {
+    public void decodeTestException1() {
         try {
             byte[] result = Base64.decode("Zm9vYmE==");
             Assert.fail();
         } catch (IllegalArgumentException exception) {
+            System.out.println(exception.getMessage());
+        }
+    }
+
+    @Test
+    public void decodeTestException2() {
+        try {
+            byte[] result = Base64.decode("Zm9vYm.=");
+            Assert.fail();
+        } catch (IllegalArgumentException exception) {
+            System.out.println(exception.getMessage());
+        }
+    }
+
+    @Test
+    public void defaultRandomEncodeTest() {
+        Random rand = new Random();
+
+        for (int i = 0; i < 1024; i++) {
+            byte[] testData = new byte[rand.nextInt(1024)];
+            rand.nextBytes(testData);
+
+            byte[] expectedResult = java.util.Base64.getEncoder().encode(testData);
+            byte[] actualResult = Base64.encode(testData).getBytes(StandardCharsets.US_ASCII);
+            Assert.assertArrayEquals(expectedResult, actualResult);
+        }
+    }
+
+    @Test
+    public void urlSafeRandomEncodeTest() {
+        Random rand = new Random();
+
+        for (int i = 0; i < 1024; i++) {
+            byte[] testData = new byte[rand.nextInt(1024)];
+            rand.nextBytes(testData);
+
+            byte[] expectedResult = java.util.Base64.getUrlEncoder().encode(testData);
+            byte[] actualResult = Base64.encodeUrlSafe(testData).getBytes(StandardCharsets.US_ASCII);
+            Assert.assertArrayEquals(expectedResult, actualResult);
+        }
+    }
+
+    @Test
+    public void defaultRandomDecodeTest() {
+        Random rand = new Random();
+
+        for (int i = 0; i < 1024; i++) {
+            byte[] testData = new byte[rand.nextInt(1024)];
+            rand.nextBytes(testData);
+
+            byte[] encoded = java.util.Base64.getEncoder().encode(testData);
+            byte[] actualResult = Base64.decode(new String(encoded, StandardCharsets.US_ASCII));
+            Assert.assertArrayEquals(testData, actualResult);
+        }
+    }
+
+    @Test
+    public void urlSafeRandomDecodeTest() {
+        Random rand = new Random();
+
+        for (int i = 0; i < 1024; i++) {
+            byte[] testData = new byte[rand.nextInt(1024)];
+            rand.nextBytes(testData);
+
+            byte[] encoded = java.util.Base64.getUrlEncoder().encode(testData);
+            byte[] actualResult = Base64.decodeUrlSafe(new String(encoded, StandardCharsets.US_ASCII));
+            Assert.assertArrayEquals(testData, actualResult);
         }
     }
 }
