@@ -3,7 +3,7 @@
 Utilities for encoding and decoding the Base64 representation of binary data.
 
  * See RFC4648 https://datatracker.ietf.org/doc/html/rfc4648
- * Special thanks to http://www5d.biglobe.ne.jp/stssk/rfc/rfc4648j.html
+ * Special thanks http://www5d.biglobe.ne.jp/stssk/rfc/rfc4648j.html
 
 
 ## License
