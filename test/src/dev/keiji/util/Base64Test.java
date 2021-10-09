@@ -1,3 +1,5 @@
+package dev.keiji.util;
+
 import dev.keiji.util.Base64;
 import org.junit.Assert;
 import org.junit.Test;
