@@ -20,6 +20,7 @@ import java.io.ByteArrayInputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 /**
  * Utilities for encoding and decoding the Base64 representation of binary data.
@@ -63,39 +64,19 @@ public class Base64 {
             '4', '5', '6', '7', '8', '9', '-', '_',
     };
 
-    private static final int[] TABLE_DECODE = new int['z' + 1];
-    private static final int[] TABLE_DECODE_URL_SAFE = new int['z' + 1];
+    private static final int[] TABLE_DECODE = new int[1 << 7];
+    private static final int[] TABLE_DECODE_URL_SAFE = new int[1 << 7];
 
     static {
         // Initialize
-        for (int i = 0; i < TABLE_DECODE.length; i++) {
-            TABLE_DECODE[i] = -1;
-            TABLE_DECODE_URL_SAFE[i] = -1;
+        Arrays.fill(TABLE_DECODE, -1);
+        Arrays.fill(TABLE_DECODE_URL_SAFE, -1);
+
+        // build reverse lookup tables
+        for (int i = 0; i < TABLE_ENCODE.length; i++) {
+            TABLE_DECODE[TABLE_ENCODE[i]] = i;
+            TABLE_DECODE_URL_SAFE[TABLE_ENCODE_URL_SAFE[i]] = i;
         }
-
-        // A -> Z
-        for (char c = 'A'; c <= 'Z'; c++) {
-            TABLE_DECODE[c] = c - 'A';
-            TABLE_DECODE_URL_SAFE[c] = c - 'A';
-        }
-
-        // a -> z
-        for (char c = 'a'; c <= 'z'; c++) {
-            TABLE_DECODE[c] = 26 + (c - 'a');
-            TABLE_DECODE_URL_SAFE[c] = 26 + (c - 'a');
-        }
-
-        // 0 -> 9
-        for (char c = '0'; c <= '9'; c++) {
-            TABLE_DECODE[c] = 52 + (c - '0');
-            TABLE_DECODE_URL_SAFE[c] = 52 + (c - '0');
-        }
-
-        TABLE_DECODE['+'] = 62;
-        TABLE_DECODE['/'] = 63;
-
-        TABLE_DECODE_URL_SAFE['-'] = 62;
-        TABLE_DECODE_URL_SAFE['_'] = 63;
     }
 
     /**
