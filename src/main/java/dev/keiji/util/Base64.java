@@ -229,7 +229,7 @@ public class Base64 {
             char key = (char) value;
             int tableValue = tableDecode[key];
             if (tableValue < 0) {
-                throw new IllegalArgumentException(String.format("Detected invalid character %c", key));
+                throw new IllegalArgumentException(String.format("Invalid character %c detected.", key));
             }
             return tableValue;
         }
