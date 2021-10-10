@@ -1,9 +1,11 @@
 plugins {
-    id 'java'
+    id 'java-library'
+    id 'maven-publish'
+    id 'signing'
 }
 
-group 'dev.keiji'
-version '1.0-SNAPSHOT'
+group 'dev.keiji.rfc4648'
+version '0.8.0'
 
 repositories {
     mavenCentral()
@@ -16,4 +18,65 @@ dependencies {
 
 test {
     useJUnitPlatform()
+}
+
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            groupId = "${group}"
+            artifactId = 'rfc4648'
+            version = "${version}"
+
+            from components.java
+
+            pom {
+                name = 'RFC4648 for Java'
+                description = 'Utilities for encoding and decoding the Base64 representation of binary data.'
+                url = 'https://github.com/keiji/rfc4648-java'
+                licenses {
+                    license {
+                        name = 'The Apache License, Version 2.0'
+                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'keiji'
+                        name = 'ARIYAMA Keiji'
+                        email = 'keiji.ariyama@gmail.com'
+                    }
+                }
+                scm {
+                    connection = 'https://github.com/keiji/rfc4648-java.git'
+                    developerConnection = 'https://github.com/keiji/rfc4648-java.git'
+                    url = 'https://github.com/keiji/rfc4648-java'
+                }
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            def releasesRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+            def snapshotsRepoUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+            url = version.endsWith('-SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+            credentials {
+                username = "${sonatypeUsername}"
+                password = "${sonatypePassword}"
+            }
+        }
+    }
+}
+
+signing {
+    if (!project.getProperties().get('signing.password')) {
+        System.console().printf("signing.password must be set.")
+        return
+    }
+    sign publishing.publications.mavenJava
 }
