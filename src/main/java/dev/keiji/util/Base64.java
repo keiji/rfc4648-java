@@ -35,9 +35,6 @@ public class Base64 {
 
     private static final int BUCKET_SIZE = 3;
 
-    private static final int BIT_WIDTH = 6;
-    private static final int BIT_MASK = 0x3F; // = 00111111
-
     private static final int INTEGER_LENGTH_IN_BYTES = 4;
 
     private static final char PAD = '=';
@@ -116,6 +113,8 @@ public class Base64 {
     }
 
     private static class Encoder {
+        private static final int BIT_WIDTH = 6;
+        private static final int BIT_MASK = 0x3F; // = 00111111
 
         public static String encode(byte[] input, char[] tableEncode) {
             if (input == null) {
