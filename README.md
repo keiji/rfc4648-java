@@ -1,9 +1,9 @@
-RFC4648(Base64) for Java
+RFC4648 for Java
 ========
 
 [![CI](https://github.com/keiji/rfc4648-java/actions/workflows/main.yml/badge.svg)](https://github.com/keiji/rfc4648-java/actions/workflows/main.yml)
 
-Utilities for encoding and decoding the Base64 representation of binary data.
+Utilities for encoding and decoding the Base64, Base32, Extended Hex Base32 and Base16 representation of binary data.
 
  * See RFC4648 https://datatracker.ietf.org/doc/html/rfc4648
 
