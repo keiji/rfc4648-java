@@ -34,7 +34,7 @@ public class Base32 {
     }
 
     private static final int PLAIN_DATA_LENGTH_IN_BYTES = 5;
-    private static final int ENCODED_LENGTH_IN_BYTES = 8;
+    private static final int ENCODED_DATA_LENGTH_IN_BYTES = 8;
 
     private static final char PAD = '=';
 
@@ -132,13 +132,13 @@ public class Base32 {
                 char[] tableEncode
         ) {
             byte[] plainData = new byte[PLAIN_DATA_LENGTH_IN_BYTES];
-            byte[] encodedData = new byte[ENCODED_LENGTH_IN_BYTES];
+            byte[] encodedData = new byte[ENCODED_DATA_LENGTH_IN_BYTES];
 
             int len;
             while ((len = byteArrayInputStream.read(plainData, 0, PLAIN_DATA_LENGTH_IN_BYTES)) > 0) {
                 int resultBucketInBit = len * 8;
                 int resultBucketLength = resultBucketInBit / BIT_WIDTH + (resultBucketInBit % BIT_WIDTH > 0 ? 1 : 0);
-                int padLength = ENCODED_LENGTH_IN_BYTES - resultBucketLength;
+                int padLength = ENCODED_DATA_LENGTH_IN_BYTES - resultBucketLength;
 
                 long value = getLongFromBucket(plainData);
 
@@ -151,7 +151,7 @@ public class Base32 {
                 encodedData[6] = (byte) tableEncode[getIndex(value, 5)];
                 encodedData[7] = (byte) tableEncode[getIndex(value, 0)];
 
-                byteArrayOutputStream.write(encodedData, 0, ENCODED_LENGTH_IN_BYTES - padLength);
+                byteArrayOutputStream.write(encodedData, 0, ENCODED_DATA_LENGTH_IN_BYTES - padLength);
 
                 for (int i = 0; i < padLength; i++) {
                     byteArrayOutputStream.write((byte) PAD);
@@ -214,10 +214,10 @@ public class Base32 {
                 int[] tableDecode
         ) {
             byte[] plainData = new byte[PLAIN_DATA_LENGTH_IN_BYTES];
-            byte[] encodedData = new byte[ENCODED_LENGTH_IN_BYTES];
+            byte[] encodedData = new byte[ENCODED_DATA_LENGTH_IN_BYTES];
 
             int len;
-            while ((len = byteArrayInputStream.read(encodedData, 0, ENCODED_LENGTH_IN_BYTES)) > 0) {
+            while ((len = byteArrayInputStream.read(encodedData, 0, ENCODED_DATA_LENGTH_IN_BYTES)) > 0) {
                 long bucketValue0 = getTableValue(tableDecode, encodedData[0]);
                 long bucketValue1 = getTableValue(tableDecode, encodedData[1]);
                 long bucketValue2 = getTableValue(tableDecode, encodedData[2]);
