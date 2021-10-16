@@ -17,8 +17,8 @@
 package dev.keiji.util;
 
 import java.io.ByteArrayInputStream;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
+import java.io.ByteArrayOutputStream;
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
@@ -122,18 +122,28 @@ public class Base64 {
                 throw new IllegalArgumentException("Input data must not be null.");
             }
 
-            StringBuilder result = new StringBuilder();
+            ByteArrayInputStream bis = new ByteArrayInputStream(input);
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
 
+            encode(bis, bos, tableEncode);
+
+            try {
+                return bos.toString(StandardCharsets.US_ASCII.name());
+            } catch (UnsupportedEncodingException e) {
+                return bos.toString();
+            }
+        }
+
+        private static void encode(
+                ByteArrayInputStream byteArrayInputStream,
+                ByteArrayOutputStream byteArrayOutputStream,
+                char[] tableEncode
+        ) {
             byte[] bucket = new byte[INTEGER_LENGTH_IN_BYTES];
 
-            ByteArrayInputStream bis = new ByteArrayInputStream(input);
-
             int len;
-            while ((len = bis.read(bucket, 0, BUCKET_SIZE)) > 0) {
-                int padLength = 0;
-                if (len < BUCKET_SIZE) {
-                    padLength = BUCKET_SIZE - len;
-                }
+            while ((len = byteArrayInputStream.read(bucket, 0, BUCKET_SIZE)) > 0) {
+                int padLength = BUCKET_SIZE - len;
 
                 int value = getIntFromBucket(bucket);
 
@@ -142,18 +152,17 @@ public class Base64 {
                     int shift = BIT_WIDTH * (INTEGER_LENGTH_IN_BYTES - 1 - i);
                     int mask = BIT_MASK << shift;
                     int index = (value & mask) >>> shift;
-                    result.append(tableEncode[index]);
+                    byte encoded = (byte) tableEncode[index];
+                    byteArrayOutputStream.write(encoded);
                 }
 
                 for (int i = 0; i < padLength; i++) {
-                    result.append(PAD);
+                    byteArrayOutputStream.write((byte) PAD);
                 }
 
                 // Clear bucket.
                 Arrays.fill(bucket, (byte) 0);
             }
-
-            return result.toString();
         }
 
         private static int getIntFromBucket(byte[] bucket) {
@@ -188,22 +197,24 @@ public class Base64 {
             }
 
             String padStrippedStr = input.substring(0, input.length() - padLength);
-            int actualPadLength = padLength - (padLength / 4 * 4);
 
-            int resultLength = ((padStrippedStr.length() + actualPadLength) * BIT_WIDTH) / 8 - actualPadLength;
-            ByteBuffer bb = ByteBuffer.allocate(resultLength)
-                    .order(ByteOrder.LITTLE_ENDIAN);
+            ByteArrayInputStream bis = new ByteArrayInputStream(padStrippedStr.getBytes(StandardCharsets.US_ASCII));
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
 
+            decode(bis, bos, tableDecode);
+            return bos.toByteArray();
+        }
+
+        private static void decode(
+                ByteArrayInputStream byteArrayInputStream,
+                ByteArrayOutputStream byteArrayOutputStream,
+                int[] tableDecode
+        ) {
             byte[] bucket = new byte[BUCKET_SIZE];
-
-            byte[] byteArray = padStrippedStr.getBytes(StandardCharsets.US_ASCII);
-            ByteArrayInputStream bis = new ByteArrayInputStream(byteArray);
-
             byte[] chars = new byte[INTEGER_LENGTH_IN_BYTES];
 
-            while ((bis.read(chars, 0, INTEGER_LENGTH_IN_BYTES)) > 0) {
-                boolean isLastBucket = bis.available() == 0;
-
+            int len;
+            while ((len = byteArrayInputStream.read(chars, 0, INTEGER_LENGTH_IN_BYTES)) > 0) {
                 int bucketValue0 = getTableValue(tableDecode, chars[0]);
                 int bucketValue1 = getTableValue(tableDecode, chars[1]);
                 int bucketValue2 = getTableValue(tableDecode, chars[2]);
@@ -217,15 +228,12 @@ public class Base64 {
                 );
 
                 readFromValue(value, bucket);
-                bb.put(bucket, 0, isLastBucket ? BUCKET_SIZE - actualPadLength : BUCKET_SIZE);
+
+                int bucketSize = BUCKET_SIZE - (INTEGER_LENGTH_IN_BYTES - len);
+                byteArrayOutputStream.write(bucket, 0, bucketSize);
 
                 Arrays.fill(chars, (byte) 0);
             }
-
-            byte[] output = bb.array();
-            bb.clear();
-
-            return output;
         }
 
         private static int getTableValue(int[] tableDecode, byte value) {
