@@ -33,9 +33,8 @@ public class Base32 {
     private Base32() {
     }
 
-    private static final int DECODED_LENGTH_IN_BYTES = 8;
-
-    private static final int ENCODED_LENGTH_IN_BYTES = 5;
+    private static final int PLAIN_DATA_LENGTH_IN_BYTES = 5;
+    private static final int ENCODED_LENGTH_IN_BYTES = 8;
 
     private static final char PAD = '=';
 
@@ -132,34 +131,34 @@ public class Base32 {
                 ByteArrayOutputStream byteArrayOutputStream,
                 char[] tableEncode
         ) {
-            byte[] bucket = new byte[ENCODED_LENGTH_IN_BYTES];
-            byte[] encoded = new byte[DECODED_LENGTH_IN_BYTES];
+            byte[] plainData = new byte[PLAIN_DATA_LENGTH_IN_BYTES];
+            byte[] encodedData = new byte[ENCODED_LENGTH_IN_BYTES];
 
             int len;
-            while ((len = byteArrayInputStream.read(bucket, 0, ENCODED_LENGTH_IN_BYTES)) > 0) {
+            while ((len = byteArrayInputStream.read(plainData, 0, PLAIN_DATA_LENGTH_IN_BYTES)) > 0) {
                 int resultBucketInBit = len * 8;
                 int resultBucketLength = resultBucketInBit / BIT_WIDTH + (resultBucketInBit % BIT_WIDTH > 0 ? 1 : 0);
-                int padLength = DECODED_LENGTH_IN_BYTES - resultBucketLength;
+                int padLength = ENCODED_LENGTH_IN_BYTES - resultBucketLength;
 
-                long value = getLongFromBucket(bucket);
+                long value = getLongFromBucket(plainData);
 
-                encoded[0] = (byte) tableEncode[getIndex(value, 35)];
-                encoded[1] = (byte) tableEncode[getIndex(value, 30)];
-                encoded[2] = (byte) tableEncode[getIndex(value, 25)];
-                encoded[3] = (byte) tableEncode[getIndex(value, 20)];
-                encoded[4] = (byte) tableEncode[getIndex(value, 15)];
-                encoded[5] = (byte) tableEncode[getIndex(value, 10)];
-                encoded[6] = (byte) tableEncode[getIndex(value, 5)];
-                encoded[7] = (byte) tableEncode[getIndex(value, 0)];
+                encodedData[0] = (byte) tableEncode[getIndex(value, 35)];
+                encodedData[1] = (byte) tableEncode[getIndex(value, 30)];
+                encodedData[2] = (byte) tableEncode[getIndex(value, 25)];
+                encodedData[3] = (byte) tableEncode[getIndex(value, 20)];
+                encodedData[4] = (byte) tableEncode[getIndex(value, 15)];
+                encodedData[5] = (byte) tableEncode[getIndex(value, 10)];
+                encodedData[6] = (byte) tableEncode[getIndex(value, 5)];
+                encodedData[7] = (byte) tableEncode[getIndex(value, 0)];
 
-                byteArrayOutputStream.write(encoded, 0, DECODED_LENGTH_IN_BYTES - padLength);
+                byteArrayOutputStream.write(encodedData, 0, ENCODED_LENGTH_IN_BYTES - padLength);
 
                 for (int i = 0; i < padLength; i++) {
                     byteArrayOutputStream.write((byte) PAD);
                 }
 
-                // Clear bucket.
-                Arrays.fill(bucket, (byte) 0);
+                // Clear plainData.
+                Arrays.fill(plainData, (byte) 0);
             }
         }
 
@@ -214,19 +213,19 @@ public class Base32 {
                 ByteArrayOutputStream byteArrayOutputStream,
                 int[] tableDecode
         ) {
-            byte[] bucket = new byte[ENCODED_LENGTH_IN_BYTES];
-            byte[] chars = new byte[DECODED_LENGTH_IN_BYTES];
+            byte[] plainData = new byte[PLAIN_DATA_LENGTH_IN_BYTES];
+            byte[] encodedData = new byte[ENCODED_LENGTH_IN_BYTES];
 
             int len;
-            while ((len = byteArrayInputStream.read(chars, 0, DECODED_LENGTH_IN_BYTES)) > 0) {
-                long bucketValue0 = getTableValue(tableDecode, chars[0]);
-                long bucketValue1 = getTableValue(tableDecode, chars[1]);
-                long bucketValue2 = getTableValue(tableDecode, chars[2]);
-                long bucketValue3 = getTableValue(tableDecode, chars[3]);
-                long bucketValue4 = getTableValue(tableDecode, chars[4]);
-                long bucketValue5 = getTableValue(tableDecode, chars[5]);
-                long bucketValue6 = getTableValue(tableDecode, chars[6]);
-                long bucketValue7 = getTableValue(tableDecode, chars[7]);
+            while ((len = byteArrayInputStream.read(encodedData, 0, ENCODED_LENGTH_IN_BYTES)) > 0) {
+                long bucketValue0 = getTableValue(tableDecode, encodedData[0]);
+                long bucketValue1 = getTableValue(tableDecode, encodedData[1]);
+                long bucketValue2 = getTableValue(tableDecode, encodedData[2]);
+                long bucketValue3 = getTableValue(tableDecode, encodedData[3]);
+                long bucketValue4 = getTableValue(tableDecode, encodedData[4]);
+                long bucketValue5 = getTableValue(tableDecode, encodedData[5]);
+                long bucketValue6 = getTableValue(tableDecode, encodedData[6]);
+                long bucketValue7 = getTableValue(tableDecode, encodedData[7]);
 
                 long value = (
                         (bucketValue0 << 35)
@@ -239,14 +238,14 @@ public class Base32 {
                                 + (bucketValue7)
                 );
 
-                readFromValue(value, bucket);
+                readFromValue(value, plainData);
 
                 int resultBucketInBit = len * 5;
                 int resultBucketLength = resultBucketInBit / 8;
 
-                byteArrayOutputStream.write(bucket, 0, resultBucketLength);
+                byteArrayOutputStream.write(plainData, 0, resultBucketLength);
 
-                Arrays.fill(chars, (byte) 0);
+                Arrays.fill(encodedData, (byte) 0);
             }
         }
 

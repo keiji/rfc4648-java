@@ -33,8 +33,7 @@ public class Base16 {
     private Base16() {
     }
 
-    private static final int DECODED_LENGTH_IN_BYTES = 1;
-
+    private static final int PLAIN_DATA_LENGTH_IN_BYTES = 1;
     private static final int ENCODED_LENGTH_IN_BYTES = 2;
 
     private static final char[] TABLE_ENCODE = {
@@ -96,16 +95,16 @@ public class Base16 {
                 ByteArrayInputStream byteArrayInputStream,
                 ByteArrayOutputStream byteArrayOutputStream
         ) {
-            byte[] bucket = new byte[DECODED_LENGTH_IN_BYTES];
-            byte[] encoded = new byte[ENCODED_LENGTH_IN_BYTES];
+            byte[] plainData = new byte[PLAIN_DATA_LENGTH_IN_BYTES];
+            byte[] encodedData = new byte[ENCODED_LENGTH_IN_BYTES];
 
-            while (byteArrayInputStream.read(bucket, 0, DECODED_LENGTH_IN_BYTES) > 0) {
-                int value = byteToInt(bucket[0]);
+            while (byteArrayInputStream.read(plainData, 0, PLAIN_DATA_LENGTH_IN_BYTES) > 0) {
+                int value = byteToInt(plainData[0]);
 
-                encoded[0] = (byte) TABLE_ENCODE[getIndex(value, 4)];
-                encoded[1] = (byte) TABLE_ENCODE[getIndex(value, 0)];
+                encodedData[0] = (byte) TABLE_ENCODE[getIndex(value, 4)];
+                encodedData[1] = (byte) TABLE_ENCODE[getIndex(value, 0)];
 
-                byteArrayOutputStream.write(encoded, 0, ENCODED_LENGTH_IN_BYTES);
+                byteArrayOutputStream.write(encodedData, 0, ENCODED_LENGTH_IN_BYTES);
             }
         }
 
@@ -142,14 +141,14 @@ public class Base16 {
                 ByteArrayInputStream byteArrayInputStream,
                 ByteArrayOutputStream byteArrayOutputStream
         ) {
-            byte[] chars = new byte[ENCODED_LENGTH_IN_BYTES];
-            byte[] decoded = new byte[DECODED_LENGTH_IN_BYTES];
+            byte[] encodedData = new byte[ENCODED_LENGTH_IN_BYTES];
+            byte[] plainData = new byte[PLAIN_DATA_LENGTH_IN_BYTES];
 
-            while (byteArrayInputStream.read(chars, 0, ENCODED_LENGTH_IN_BYTES) > 0) {
-                int valueHigh = getTableValue(TABLE_DECODE, chars[0]) << 4;
-                int valueLow = getTableValue(TABLE_DECODE, chars[1]);
-                decoded[0] = (byte) (valueHigh + valueLow);
-                byteArrayOutputStream.write(decoded, 0, DECODED_LENGTH_IN_BYTES);
+            while (byteArrayInputStream.read(encodedData, 0, ENCODED_LENGTH_IN_BYTES) > 0) {
+                int valueHigh = getTableValue(TABLE_DECODE, encodedData[0]) << 4;
+                int valueLow = getTableValue(TABLE_DECODE, encodedData[1]);
+                plainData[0] = (byte) (valueHigh + valueLow);
+                byteArrayOutputStream.write(plainData, 0, PLAIN_DATA_LENGTH_IN_BYTES);
             }
         }
 

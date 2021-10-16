@@ -35,9 +35,8 @@ public class Base64 {
 
     private static final int BIT_WIDTH = 6;
 
-    private static final int ENCODED_BUCKET_SIZE_IN_BYTES = 3;
-
-    private static final int DECODED_BUCKET_LENGTH_IN_BYTES = 4;
+    private static final int PLAIN_DATA_LENGTH_IN_BYTES = 3;
+    private static final int ENCODED_DATA_LENGTH_IN_BYTES = 4;
 
     private static final char PAD = '=';
 
@@ -139,34 +138,34 @@ public class Base64 {
                 ByteArrayOutputStream byteArrayOutputStream,
                 char[] tableEncode
         ) {
-            byte[] bucket = new byte[DECODED_BUCKET_LENGTH_IN_BYTES];
-            byte[] encoded = new byte[DECODED_BUCKET_LENGTH_IN_BYTES];
+            byte[] plainData = new byte[PLAIN_DATA_LENGTH_IN_BYTES];
+            byte[] encodedData = new byte[ENCODED_DATA_LENGTH_IN_BYTES];
 
             int len;
-            while ((len = byteArrayInputStream.read(bucket, 0, ENCODED_BUCKET_SIZE_IN_BYTES)) > 0) {
+            while ((len = byteArrayInputStream.read(plainData, 0, PLAIN_DATA_LENGTH_IN_BYTES)) > 0) {
 //                int encodedBucketLengthInBit = len * 8;
 //                int resultBucketLengthInBytes = encodedBucketLengthInBit / BIT_WIDTH
 //                        + (encodedBucketLengthInBit % BIT_WIDTH == 0 ? 0 : 1);
 //                int padLength = DECODED_BUCKET_LENGTH_IN_BYTES - resultBucketLengthInBytes;
 
                 // Simplified for Base64
-                int padLength = ENCODED_BUCKET_SIZE_IN_BYTES - len;
+                int padLength = PLAIN_DATA_LENGTH_IN_BYTES - len;
 
-                int value = getIntFromBucket(bucket);
+                int value = getIntFromBucket(plainData);
 
-                encoded[0] = (byte) tableEncode[getIndex(value, 18)];
-                encoded[1] = (byte) tableEncode[getIndex(value, 12)];
-                encoded[2] = (byte) tableEncode[getIndex(value, 6)];
-                encoded[3] = (byte) tableEncode[getIndex(value, 0)];
+                encodedData[0] = (byte) tableEncode[getIndex(value, 18)];
+                encodedData[1] = (byte) tableEncode[getIndex(value, 12)];
+                encodedData[2] = (byte) tableEncode[getIndex(value, 6)];
+                encodedData[3] = (byte) tableEncode[getIndex(value, 0)];
 
-                byteArrayOutputStream.write(encoded, 0, DECODED_BUCKET_LENGTH_IN_BYTES - padLength);
+                byteArrayOutputStream.write(encodedData, 0, ENCODED_DATA_LENGTH_IN_BYTES - padLength);
 
                 for (int i = 0; i < padLength; i++) {
                     byteArrayOutputStream.write((byte) PAD);
                 }
 
-                // Clear bucket.
-                Arrays.fill(bucket, (byte) 0);
+                // Clear plainData.
+                Arrays.fill(plainData, (byte) 0);
             }
         }
 
@@ -219,23 +218,23 @@ public class Base64 {
                 ByteArrayOutputStream byteArrayOutputStream,
                 int[] tableDecode
         ) {
-            byte[] bucket = new byte[ENCODED_BUCKET_SIZE_IN_BYTES];
-            byte[] chars = new byte[DECODED_BUCKET_LENGTH_IN_BYTES];
+            byte[] plainData = new byte[PLAIN_DATA_LENGTH_IN_BYTES];
+            byte[] encodedData = new byte[ENCODED_DATA_LENGTH_IN_BYTES];
 
             int len;
-            while ((len = byteArrayInputStream.read(chars, 0, DECODED_BUCKET_LENGTH_IN_BYTES)) > 0) {
+            while ((len = byteArrayInputStream.read(encodedData, 0, ENCODED_DATA_LENGTH_IN_BYTES)) > 0) {
 //                int decodedBucketLengthInBit = len * BIT_WIDTH;
 //                int resultBucketLengthInBytes = decodedBucketLengthInBit / BIT_WIDTH
 //                        + (decodedBucketLengthInBit % BIT_WIDTH == 0 ? 0 : 1);
 //                int padLength = DECODED_BUCKET_LENGTH_IN_BYTES - resultBucketLengthInBytes;
 
                 // Simplified for Base64
-                int padLength = DECODED_BUCKET_LENGTH_IN_BYTES - len;
+                int padLength = ENCODED_DATA_LENGTH_IN_BYTES - len;
 
-                int bucketValue0 = getTableValue(tableDecode, chars[0]);
-                int bucketValue1 = getTableValue(tableDecode, chars[1]);
-                int bucketValue2 = getTableValue(tableDecode, chars[2]);
-                int bucketValue3 = getTableValue(tableDecode, chars[3]);
+                int bucketValue0 = getTableValue(tableDecode, encodedData[0]);
+                int bucketValue1 = getTableValue(tableDecode, encodedData[1]);
+                int bucketValue2 = getTableValue(tableDecode, encodedData[2]);
+                int bucketValue3 = getTableValue(tableDecode, encodedData[3]);
 
                 int value = (
                         (bucketValue0 << 18)
@@ -244,12 +243,12 @@ public class Base64 {
                                 + (bucketValue3)
                 );
 
-                readFromValue(value, bucket);
+                readFromValue(value, plainData);
 
-                int bucketSize = ENCODED_BUCKET_SIZE_IN_BYTES - padLength;
-                byteArrayOutputStream.write(bucket, 0, bucketSize);
+                int bucketSize = PLAIN_DATA_LENGTH_IN_BYTES - padLength;
+                byteArrayOutputStream.write(plainData, 0, bucketSize);
 
-                Arrays.fill(chars, (byte) 0);
+                Arrays.fill(encodedData, (byte) 0);
             }
         }
 
