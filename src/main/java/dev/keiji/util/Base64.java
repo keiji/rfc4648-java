@@ -18,6 +18,7 @@ package dev.keiji.util;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
@@ -125,7 +126,12 @@ public class Base64 {
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
 
             encode(bis, bos, tableEncode);
-            return bos.toString(StandardCharsets.US_ASCII);
+
+            try {
+                return bos.toString(StandardCharsets.US_ASCII.name());
+            } catch (UnsupportedEncodingException e) {
+                return bos.toString();
+            }
         }
 
         private static void encode(
