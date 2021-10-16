@@ -33,9 +33,11 @@ public class Base64 {
     private Base64() {
     }
 
-    private static final int BUCKET_SIZE = 3;
+    private static final int BIT_WIDTH = 6;
 
-    private static final int INTEGER_LENGTH_IN_BYTES = 4;
+    private static final int ENCODED_BUCKET_SIZE_IN_BYTES = 3;
+
+    private static final int DECODED_BUCKET_LENGTH_IN_BYTES = 4;
 
     private static final char PAD = '=';
 
@@ -113,7 +115,6 @@ public class Base64 {
     }
 
     private static class Encoder {
-        private static final int BIT_WIDTH = 6;
         private static final int BIT_MASK = 0x3F; // = 00111111
 
         public static String encode(byte[] input, char[] tableEncode) {
@@ -138,22 +139,27 @@ public class Base64 {
                 ByteArrayOutputStream byteArrayOutputStream,
                 char[] tableEncode
         ) {
-            byte[] bucket = new byte[INTEGER_LENGTH_IN_BYTES];
+            byte[] bucket = new byte[DECODED_BUCKET_LENGTH_IN_BYTES];
+            byte[] encoded = new byte[DECODED_BUCKET_LENGTH_IN_BYTES];
 
             int len;
-            while ((len = byteArrayInputStream.read(bucket, 0, BUCKET_SIZE)) > 0) {
-                int padLength = BUCKET_SIZE - len;
+            while ((len = byteArrayInputStream.read(bucket, 0, ENCODED_BUCKET_SIZE_IN_BYTES)) > 0) {
+//                int encodedBucketLengthInBit = len * 8;
+//                int resultBucketLengthInBytes = encodedBucketLengthInBit / BIT_WIDTH
+//                        + (encodedBucketLengthInBit % BIT_WIDTH == 0 ? 0 : 1);
+//                int padLength = DECODED_BUCKET_LENGTH_IN_BYTES - resultBucketLengthInBytes;
+
+                // Simplified for Base64
+                int padLength = ENCODED_BUCKET_SIZE_IN_BYTES - len;
 
                 int value = getIntFromBucket(bucket);
 
-                int targetLength = INTEGER_LENGTH_IN_BYTES - padLength;
-                for (int i = 0; i < targetLength; i++) {
-                    int shift = BIT_WIDTH * (INTEGER_LENGTH_IN_BYTES - 1 - i);
-                    int mask = BIT_MASK << shift;
-                    int index = (value & mask) >>> shift;
-                    byte encoded = (byte) tableEncode[index];
-                    byteArrayOutputStream.write(encoded);
-                }
+                encoded[0] = (byte) tableEncode[getIndex(value, 18)];
+                encoded[1] = (byte) tableEncode[getIndex(value, 12)];
+                encoded[2] = (byte) tableEncode[getIndex(value, 6)];
+                encoded[3] = (byte) tableEncode[getIndex(value, 0)];
+
+                byteArrayOutputStream.write(encoded, 0, DECODED_BUCKET_LENGTH_IN_BYTES - padLength);
 
                 for (int i = 0; i < padLength; i++) {
                     byteArrayOutputStream.write((byte) PAD);
@@ -162,6 +168,10 @@ public class Base64 {
                 // Clear bucket.
                 Arrays.fill(bucket, (byte) 0);
             }
+        }
+
+        private static byte getIndex(long value, int shift) {
+            return (byte) ((value & BIT_MASK << shift) >>> shift);
         }
 
         private static int getIntFromBucket(byte[] bucket) {
@@ -209,11 +219,19 @@ public class Base64 {
                 ByteArrayOutputStream byteArrayOutputStream,
                 int[] tableDecode
         ) {
-            byte[] bucket = new byte[BUCKET_SIZE];
-            byte[] chars = new byte[INTEGER_LENGTH_IN_BYTES];
+            byte[] bucket = new byte[ENCODED_BUCKET_SIZE_IN_BYTES];
+            byte[] chars = new byte[DECODED_BUCKET_LENGTH_IN_BYTES];
 
             int len;
-            while ((len = byteArrayInputStream.read(chars, 0, INTEGER_LENGTH_IN_BYTES)) > 0) {
+            while ((len = byteArrayInputStream.read(chars, 0, DECODED_BUCKET_LENGTH_IN_BYTES)) > 0) {
+//                int decodedBucketLengthInBit = len * BIT_WIDTH;
+//                int resultBucketLengthInBytes = decodedBucketLengthInBit / BIT_WIDTH
+//                        + (decodedBucketLengthInBit % BIT_WIDTH == 0 ? 0 : 1);
+//                int padLength = DECODED_BUCKET_LENGTH_IN_BYTES - resultBucketLengthInBytes;
+
+                // Simplified for Base64
+                int padLength = DECODED_BUCKET_LENGTH_IN_BYTES - len;
+
                 int bucketValue0 = getTableValue(tableDecode, chars[0]);
                 int bucketValue1 = getTableValue(tableDecode, chars[1]);
                 int bucketValue2 = getTableValue(tableDecode, chars[2]);
@@ -228,7 +246,7 @@ public class Base64 {
 
                 readFromValue(value, bucket);
 
-                int bucketSize = BUCKET_SIZE - (INTEGER_LENGTH_IN_BYTES - len);
+                int bucketSize = ENCODED_BUCKET_SIZE_IN_BYTES - padLength;
                 byteArrayOutputStream.write(bucket, 0, bucketSize);
 
                 Arrays.fill(chars, (byte) 0);
