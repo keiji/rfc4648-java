@@ -73,6 +73,7 @@ public class Base32 {
      * Base32-encode the given data and return a newly allocated String with the result.
      *
      * @param input the data to encode
+     * @return a newly allocated String with the result
      */
     public static String encode(byte[] input) {
         return Encoder.encode(input, TABLE_ENCODE);
@@ -82,6 +83,7 @@ public class Base32 {
      * Decode the Base32-encoded data in input and return the data in a new byte array.
      *
      * @param input the data to decode
+     * @return the data in a new byte array
      */
     public static byte[] decode(String input) {
         return Decoder.decode(input, TABLE_DECODE);
@@ -91,6 +93,7 @@ public class Base32 {
      * Extended Hex Base32-encode the given data and return a newly allocated String with the result.
      *
      * @param input the data to encode
+     * @return a newly allocated String with the result
      */
     public static String encodeExtendedHex(byte[] input) {
         return Encoder.encode(input, TABLE_ENCODE_EXTENDED_HEX);
@@ -100,6 +103,7 @@ public class Base32 {
      * Decode the Extended Hex Base32-encoded data in input and return the data in a new byte array.
      *
      * @param input the data to decode
+     * @return the data in a new byte array
      */
     public static byte[] decodeExtendedHex(String input) {
         return Decoder.decode(input, TABLE_DECODE_EXTENDED_HEX);

@@ -81,6 +81,7 @@ public class Base64 {
      * Base64-encode the given data and return a newly allocated String with the result.
      *
      * @param input the data to encode
+     * @return a newly allocated String with the result
      */
     public static String encode(byte[] input) {
         return Encoder.encode(input, TABLE_ENCODE);
@@ -90,6 +91,7 @@ public class Base64 {
      * Base64 url and filename safe encode the given data and return a newly allocated String with the result.
      *
      * @param input the data to encode
+     * @return a newly allocated String with the result
      */
     public static String encodeUrlSafe(byte[] input) {
         return Encoder.encode(input, TABLE_ENCODE_URL_SAFE);
@@ -99,6 +101,7 @@ public class Base64 {
      * Decode the Base64-encoded data in input and return the data in a new byte array.
      *
      * @param input the data to decode
+     * @return the data in a new byte array
      */
     public static byte[] decode(String input) {
         return Decoder.decode(input, TABLE_DECODE);
@@ -108,6 +111,7 @@ public class Base64 {
      * Decode the Base64 url and filename safe encoded data in input and return the data in a new byte array.
      *
      * @param input the data to decode
+     * @return the data in a new byte array
      */
     public static byte[] decodeUrlSafe(String input) {
         return Decoder.decode(input, TABLE_DECODE_URL_SAFE);

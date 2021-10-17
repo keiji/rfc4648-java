@@ -57,6 +57,7 @@ public class Base16 {
      * Base16-encode the given data and return a newly allocated String with the result.
      *
      * @param input the data to encode
+     * @return a newly allocated String with the result
      */
     public static String encode(byte[] input) {
         return Encoder.encode(input);
@@ -66,6 +67,7 @@ public class Base16 {
      * Decode the Base16-encoded data in input and return the data in a new byte array.
      *
      * @param input the data to decode
+     * @return the data in a new byte array
      */
     public static byte[] decode(String input) {
         return Decoder.decode(input);
