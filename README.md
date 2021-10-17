@@ -16,7 +16,7 @@ To add RFC4648 for Java to your project, include the following in your app modul
 dependencies {
     ...
 
-    implementation 'dev.keiji.rfc4648:rfc4648:0.8.0'
+    implementation 'dev.keiji.rfc4648:rfc4648:0.9.0'
 }
 ```
 
