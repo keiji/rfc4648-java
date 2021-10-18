@@ -40,7 +40,7 @@ public class Base64 {
 
     private static final char PAD = '=';
 
-    private static final char[] TABLE_ENCODE = {
+    private static final byte[] TABLE_ENCODE = {
             'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
             'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
             'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
@@ -51,7 +51,7 @@ public class Base64 {
             '4', '5', '6', '7', '8', '9', '+', '/',
     };
 
-    private static final char[] TABLE_ENCODE_URL_SAFE = {
+    private static final byte[] TABLE_ENCODE_URL_SAFE = {
             'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
             'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
             'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
@@ -120,7 +120,7 @@ public class Base64 {
     private static class Encoder {
         private static final int BIT_MASK = 0x3F; // = 00111111
 
-        public static String encode(byte[] input, char[] tableEncode) {
+        public static String encode(byte[] input, byte[] tableEncode) {
             if (input == null) {
                 throw new IllegalArgumentException("Input data must not be null.");
             }
@@ -140,7 +140,7 @@ public class Base64 {
         private static void encode(
                 ByteArrayInputStream byteArrayInputStream,
                 ByteArrayOutputStream byteArrayOutputStream,
-                char[] tableEncode
+                byte[] tableEncode
         ) {
             byte[] plainDataBlock = new byte[PLAIN_DATA_BLOCK_SIZE];
             byte[] encodedDataBlock = new byte[ENCODED_DATA_BLOCK_SIZE];
@@ -157,10 +157,10 @@ public class Base64 {
 
                 int value = getIntFromBlock(plainDataBlock);
 
-                encodedDataBlock[0] = (byte) tableEncode[getIndex(value, 18)];
-                encodedDataBlock[1] = (byte) tableEncode[getIndex(value, 12)];
-                encodedDataBlock[2] = (byte) tableEncode[getIndex(value, 6)];
-                encodedDataBlock[3] = (byte) tableEncode[getIndex(value, 0)];
+                encodedDataBlock[0] = tableEncode[getIndex(value, 18)];
+                encodedDataBlock[1] = tableEncode[getIndex(value, 12)];
+                encodedDataBlock[2] = tableEncode[getIndex(value, 6)];
+                encodedDataBlock[3] = tableEncode[getIndex(value, 0)];
 
                 byteArrayOutputStream.write(encodedDataBlock, 0, ENCODED_DATA_BLOCK_SIZE - padSize);
 
@@ -177,11 +177,11 @@ public class Base64 {
             return (byte) ((value & BIT_MASK << shift) >>> shift);
         }
 
-        private static int getIntFromBlock(byte[] bucket) {
+        private static int getIntFromBlock(byte[] block) {
             return (
-                    byteToInt(bucket[0]) << 16)
-                    + (byteToInt(bucket[1]) << 8)
-                    + (byteToInt(bucket[2])
+                    byteToInt(block[0]) << 16)
+                    + (byteToInt(block[1]) << 8)
+                    + (byteToInt(block[2])
             );
         }
 

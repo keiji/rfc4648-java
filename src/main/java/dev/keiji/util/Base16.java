@@ -36,7 +36,7 @@ public class Base16 {
     private static final int PLAIN_DATA_BLOCK_SIZE = 1;
     private static final int ENCODED_DATA_BLOCK_SIZE = 2;
 
-    private static final char[] TABLE_ENCODE = {
+    private static final byte[] TABLE_ENCODE = {
             '0', '1', '2', '3', '4', '5', '6', '7',
             '8', '9', 'A', 'B', 'C', 'D', 'E', 'F',
     };
@@ -103,8 +103,8 @@ public class Base16 {
             while (byteArrayInputStream.read(plainDataBlock, 0, PLAIN_DATA_BLOCK_SIZE) > 0) {
                 int value = byteToInt(plainDataBlock[0]);
 
-                encodedDataBlock[0] = (byte) TABLE_ENCODE[getIndex(value, 4)];
-                encodedDataBlock[1] = (byte) TABLE_ENCODE[getIndex(value, 0)];
+                encodedDataBlock[0] = TABLE_ENCODE[getIndex(value, 4)];
+                encodedDataBlock[1] = TABLE_ENCODE[getIndex(value, 0)];
 
                 byteArrayOutputStream.write(encodedDataBlock, 0, ENCODED_DATA_BLOCK_SIZE);
             }

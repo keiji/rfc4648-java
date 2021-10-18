@@ -38,14 +38,14 @@ public class Base32 {
 
     private static final char PAD = '=';
 
-    private static final char[] TABLE_ENCODE = {
+    private static final byte[] TABLE_ENCODE = {
             'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
             'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
             'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
             'Y', 'Z', '2', '3', '4', '5', '6', '7',
     };
 
-    private static final char[] TABLE_ENCODE_EXTENDED_HEX = {
+    private static final byte[] TABLE_ENCODE_EXTENDED_HEX = {
             '0', '1', '2', '3', '4', '5', '6', '7',
             '8', '9', 'A', 'B', 'C', 'D', 'E', 'F',
             'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N',
@@ -111,7 +111,7 @@ public class Base32 {
         private static final int BIT_WIDTH = 5;
         private static final long BIT_MASK = 0x1F; // = 00011111
 
-        public static String encode(byte[] input, char[] tableEncode) {
+        public static String encode(byte[] input, byte[] tableEncode) {
             if (input == null) {
                 throw new IllegalArgumentException("Input data must not be null.");
             }
@@ -131,7 +131,7 @@ public class Base32 {
         private static void encode(
                 ByteArrayInputStream byteArrayInputStream,
                 ByteArrayOutputStream byteArrayOutputStream,
-                char[] tableEncode
+                byte[] tableEncode
         ) {
             byte[] plainDataBlock = new byte[PLAIN_DATA_BLOCK_SIZE];
             byte[] encodedDataBlock = new byte[ENCODED_DATA_BLOCK_SIZE];
@@ -144,14 +144,14 @@ public class Base32 {
 
                 long value = getLongFromBlock(plainDataBlock);
 
-                encodedDataBlock[0] = (byte) tableEncode[getIndex(value, 35)];
-                encodedDataBlock[1] = (byte) tableEncode[getIndex(value, 30)];
-                encodedDataBlock[2] = (byte) tableEncode[getIndex(value, 25)];
-                encodedDataBlock[3] = (byte) tableEncode[getIndex(value, 20)];
-                encodedDataBlock[4] = (byte) tableEncode[getIndex(value, 15)];
-                encodedDataBlock[5] = (byte) tableEncode[getIndex(value, 10)];
-                encodedDataBlock[6] = (byte) tableEncode[getIndex(value, 5)];
-                encodedDataBlock[7] = (byte) tableEncode[getIndex(value, 0)];
+                encodedDataBlock[0] = tableEncode[getIndex(value, 35)];
+                encodedDataBlock[1] = tableEncode[getIndex(value, 30)];
+                encodedDataBlock[2] = tableEncode[getIndex(value, 25)];
+                encodedDataBlock[3] = tableEncode[getIndex(value, 20)];
+                encodedDataBlock[4] = tableEncode[getIndex(value, 15)];
+                encodedDataBlock[5] = tableEncode[getIndex(value, 10)];
+                encodedDataBlock[6] = tableEncode[getIndex(value, 5)];
+                encodedDataBlock[7] = tableEncode[getIndex(value, 0)];
 
                 byteArrayOutputStream.write(encodedDataBlock, 0, ENCODED_DATA_BLOCK_SIZE - padSize);
 
@@ -168,13 +168,13 @@ public class Base32 {
             return (byte) ((value & BIT_MASK << shift) >>> shift);
         }
 
-        private static long getLongFromBlock(byte[] bucket) {
+        private static long getLongFromBlock(byte[] block) {
             return (
-                    byteToLong(bucket[0]) << 32)
-                    + (byteToLong(bucket[1]) << 24)
-                    + (byteToLong(bucket[2]) << 16)
-                    + (byteToLong(bucket[3]) << 8)
-                    + (byteToLong(bucket[4])
+                    byteToLong(block[0]) << 32)
+                    + (byteToLong(block[1]) << 24)
+                    + (byteToLong(block[2]) << 16)
+                    + (byteToLong(block[3]) << 8)
+                    + (byteToLong(block[4])
             );
         }
 
