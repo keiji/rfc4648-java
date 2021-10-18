@@ -63,8 +63,6 @@ public class Base32 {
         // build reverse lookup tables
         for (int i = 0; i < TABLE_ENCODE.length; i++) {
             TABLE_DECODE[TABLE_ENCODE[i]] = i;
-        }
-        for (int i = 0; i < TABLE_ENCODE_EXTENDED_HEX.length; i++) {
             TABLE_DECODE_EXTENDED_HEX[TABLE_ENCODE_EXTENDED_HEX[i]] = i;
         }
     }
