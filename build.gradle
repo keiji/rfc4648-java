@@ -4,6 +4,9 @@ plugins {
     id 'signing'
 }
 
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
 group 'dev.keiji.rfc4648'
 version '1.0.0'
 
