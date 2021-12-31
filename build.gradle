@@ -8,7 +8,7 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 group 'dev.keiji.rfc4648'
-version '1.0.0'
+version '1.0.1'
 
 repositories {
     mavenCentral()
@@ -72,8 +72,8 @@ publishing {
             def sonatypeUsername = project.getProperties().get('sonatypeUsername') ?: ""
             def sonatypePassword = project.getProperties().get('sonatypePassword') ?: ""
             credentials {
-                username = "${sonatypeUsername}"
-                password = "${sonatypePassword}"
+                username = sonatypeUsername
+                password = sonatypePassword
             }
         }
     }
