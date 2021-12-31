@@ -104,7 +104,7 @@ public class Base64 {
      * @return the data in a new byte array
      */
     public static byte[] decode(String input) {
-        return Decoder.decode(input, TABLE_DECODE);
+        return Decoder.decode(input, TABLE_DECODE, true);
     }
 
     /**
@@ -114,7 +114,7 @@ public class Base64 {
      * @return the data in a new byte array
      */
     public static byte[] decodeUrlSafe(String input) {
-        return Decoder.decode(input, TABLE_DECODE_URL_SAFE);
+        return Decoder.decode(input, TABLE_DECODE_URL_SAFE, false);
     }
 
     private static class Encoder {
@@ -192,14 +192,14 @@ public class Base64 {
 
     private static class Decoder {
 
-        public static byte[] decode(String input, int[] tableDecode) {
+        public static byte[] decode(String input, int[] tableDecode, boolean expectPadding) {
             if (input == null) {
                 throw new IllegalArgumentException("Input string must not be null.");
             }
             if (input.length() == 0) {
                 return new byte[0];
             }
-            if (input.length() % 4 != 0) {
+            if (expectPadding && input.length() % 4 != 0) {
                 throw new IllegalArgumentException("Input string length must be divisible by 4.");
             }
 
