@@ -33,8 +33,6 @@ public class Base64 {
     private Base64() {
     }
 
-    private static final int BIT_WIDTH = 6;
-
     private static final int PLAIN_DATA_BLOCK_SIZE = 3;
     private static final int ENCODED_DATA_BLOCK_SIZE = 4;
 
