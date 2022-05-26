@@ -16,14 +16,14 @@ To add RFC4648 for Java to your project, include the following in your app modul
 dependencies {
     ...
 
-    implementation 'dev.keiji.rfc4648:rfc4648:1.0.0'
+    implementation 'dev.keiji.rfc4648:rfc4648:1.0.1'
 }
 ```
 
 License
 ========
 
-    Copyright 2021 ARIYAMA Keiji
+    Copyright 2021-2022 ARIYAMA Keiji
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
