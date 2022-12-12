@@ -7,26 +7,26 @@ import java.nio.charset.StandardCharsets;
 
 public class Base32ExtendedHexTest {
 
-    private static byte[] TEST_VECTOR0_DECODED = "".getBytes(StandardCharsets.US_ASCII);
-    private static String TEST_VECTOR0_ENCODED = "";
+    private static final byte[] TEST_VECTOR0_DECODED = "".getBytes(StandardCharsets.US_ASCII);
+    private static final String TEST_VECTOR0_ENCODED = "";
 
-    private static byte[] TEST_VECTOR1_DECODED = "f".getBytes(StandardCharsets.US_ASCII);
-    private static String TEST_VECTOR1_ENCODED = "CO======";
+    private static final byte[] TEST_VECTOR1_DECODED = "f".getBytes(StandardCharsets.US_ASCII);
+    private static final String TEST_VECTOR1_ENCODED = "CO======";
 
-    private static byte[] TEST_VECTOR2_DECODED = "fo".getBytes(StandardCharsets.US_ASCII);
-    private static String TEST_VECTOR2_ENCODED = "CPNG====";
+    private static final byte[] TEST_VECTOR2_DECODED = "fo".getBytes(StandardCharsets.US_ASCII);
+    private static final String TEST_VECTOR2_ENCODED = "CPNG====";
 
-    private static byte[] TEST_VECTOR3_DECODED = "foo".getBytes(StandardCharsets.US_ASCII);
-    private static String TEST_VECTOR3_ENCODED = "CPNMU===";
+    private static final byte[] TEST_VECTOR3_DECODED = "foo".getBytes(StandardCharsets.US_ASCII);
+    private static final String TEST_VECTOR3_ENCODED = "CPNMU===";
 
-    private static byte[] TEST_VECTOR4_DECODED = "foob".getBytes(StandardCharsets.US_ASCII);
-    private static String TEST_VECTOR4_ENCODED = "CPNMUOG=";
+    private static final byte[] TEST_VECTOR4_DECODED = "foob".getBytes(StandardCharsets.US_ASCII);
+    private static final String TEST_VECTOR4_ENCODED = "CPNMUOG=";
 
-    private static byte[] TEST_VECTOR5_DECODED = "fooba".getBytes(StandardCharsets.US_ASCII);
-    private static String TEST_VECTOR5_ENCODED = "CPNMUOJ1";
+    private static final byte[] TEST_VECTOR5_DECODED = "fooba".getBytes(StandardCharsets.US_ASCII);
+    private static final String TEST_VECTOR5_ENCODED = "CPNMUOJ1";
 
-    private static byte[] TEST_VECTOR6_DECODED = "foobar".getBytes(StandardCharsets.US_ASCII);
-    private static String TEST_VECTOR6_ENCODED = "CPNMUOJ1E8======";
+    private static final byte[] TEST_VECTOR6_DECODED = "foobar".getBytes(StandardCharsets.US_ASCII);
+    private static final String TEST_VECTOR6_ENCODED = "CPNMUOJ1E8======";
 
     @Test
     public void encodeTest0() {

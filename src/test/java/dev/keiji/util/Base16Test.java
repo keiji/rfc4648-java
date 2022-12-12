@@ -7,26 +7,26 @@ import java.nio.charset.StandardCharsets;
 
 public class Base16Test {
 
-    private static byte[] TEST_VECTOR0_DECODED = "".getBytes(StandardCharsets.US_ASCII);
-    private static String TEST_VECTOR0_ENCODED = "";
+    private static final byte[] TEST_VECTOR0_DECODED = "".getBytes(StandardCharsets.US_ASCII);
+    private static final String TEST_VECTOR0_ENCODED = "";
 
-    private static byte[] TEST_VECTOR1_DECODED = "f".getBytes(StandardCharsets.US_ASCII);
-    private static String TEST_VECTOR1_ENCODED = "66";
+    private static final byte[] TEST_VECTOR1_DECODED = "f".getBytes(StandardCharsets.US_ASCII);
+    private static final String TEST_VECTOR1_ENCODED = "66";
 
-    private static byte[] TEST_VECTOR2_DECODED = "fo".getBytes(StandardCharsets.US_ASCII);
-    private static String TEST_VECTOR2_ENCODED = "666F";
+    private static final byte[] TEST_VECTOR2_DECODED = "fo".getBytes(StandardCharsets.US_ASCII);
+    private static final String TEST_VECTOR2_ENCODED = "666F";
 
-    private static byte[] TEST_VECTOR3_DECODED = "foo".getBytes(StandardCharsets.US_ASCII);
-    private static String TEST_VECTOR3_ENCODED = "666F6F";
+    private static final byte[] TEST_VECTOR3_DECODED = "foo".getBytes(StandardCharsets.US_ASCII);
+    private static final String TEST_VECTOR3_ENCODED = "666F6F";
 
-    private static byte[] TEST_VECTOR4_DECODED = "foob".getBytes(StandardCharsets.US_ASCII);
-    private static String TEST_VECTOR4_ENCODED = "666F6F62";
+    private static final byte[] TEST_VECTOR4_DECODED = "foob".getBytes(StandardCharsets.US_ASCII);
+    private static final String TEST_VECTOR4_ENCODED = "666F6F62";
 
-    private static byte[] TEST_VECTOR5_DECODED = "fooba".getBytes(StandardCharsets.US_ASCII);
-    private static String TEST_VECTOR5_ENCODED = "666F6F6261";
+    private static final byte[] TEST_VECTOR5_DECODED = "fooba".getBytes(StandardCharsets.US_ASCII);
+    private static final String TEST_VECTOR5_ENCODED = "666F6F6261";
 
-    private static byte[] TEST_VECTOR6_DECODED = "foobar".getBytes(StandardCharsets.US_ASCII);
-    private static String TEST_VECTOR6_ENCODED = "666F6F626172";
+    private static final byte[] TEST_VECTOR6_DECODED = "foobar".getBytes(StandardCharsets.US_ASCII);
+    private static final String TEST_VECTOR6_ENCODED = "666F6F626172";
 
     @Test
     public void encodeTest0() {
