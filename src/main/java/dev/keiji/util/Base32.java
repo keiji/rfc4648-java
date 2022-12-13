@@ -18,6 +18,9 @@ package dev.keiji.util;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -119,25 +122,27 @@ public class Base32 {
             ByteArrayInputStream bais = new ByteArrayInputStream(input);
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-            encode(bais, baos, tableEncode);
-
             try {
+                encode(bais, baos, tableEncode);
                 return baos.toString(StandardCharsets.US_ASCII.name());
             } catch (UnsupportedEncodingException e) {
                 return baos.toString();
+            } catch (IOException e) {
+                // ByteArray[Input|Output]Stream never throws IOException
+                return null;
             }
         }
 
         private static void encode(
-                ByteArrayInputStream byteArrayInputStream,
-                ByteArrayOutputStream byteArrayOutputStream,
+                InputStream inputStream,
+                OutputStream outputStream,
                 byte[] tableEncode
-        ) {
+        ) throws IOException {
             byte[] plainDataBlock = new byte[PLAIN_DATA_BLOCK_SIZE];
             byte[] encodedDataBlock = new byte[ENCODED_DATA_BLOCK_SIZE];
 
             int len;
-            while ((len = byteArrayInputStream.read(plainDataBlock, 0, PLAIN_DATA_BLOCK_SIZE)) > 0) {
+            while ((len = inputStream.read(plainDataBlock, 0, PLAIN_DATA_BLOCK_SIZE)) > 0) {
                 int resultBlockSizeInBit = len * 8;
                 int resultBlockSize = resultBlockSizeInBit / BIT_WIDTH + (resultBlockSizeInBit % BIT_WIDTH > 0 ? 1 : 0);
                 int padSize = ENCODED_DATA_BLOCK_SIZE - resultBlockSize;
@@ -153,10 +158,10 @@ public class Base32 {
                 encodedDataBlock[6] = tableEncode[getIndex(value, 5)];
                 encodedDataBlock[7] = tableEncode[getIndex(value, 0)];
 
-                byteArrayOutputStream.write(encodedDataBlock, 0, ENCODED_DATA_BLOCK_SIZE - padSize);
+                outputStream.write(encodedDataBlock, 0, ENCODED_DATA_BLOCK_SIZE - padSize);
 
                 for (int i = 0; i < padSize; i++) {
-                    byteArrayOutputStream.write((byte) PAD);
+                    outputStream.write((byte) PAD);
                 }
 
                 // Clear plainDataBlock.
@@ -206,21 +211,25 @@ public class Base32 {
             ByteArrayInputStream bais = new ByteArrayInputStream(padStrippedStr.getBytes(StandardCharsets.US_ASCII));
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-            decode(bais, baos, tableDecode);
-
-            return baos.toByteArray();
+            try {
+                decode(bais, baos, tableDecode);
+                return baos.toByteArray();
+            } catch (IOException e) {
+                // ByteArray[Input|Output]Stream never throws IOException
+                return null;
+            }
         }
 
         private static void decode(
-                ByteArrayInputStream byteArrayInputStream,
-                ByteArrayOutputStream byteArrayOutputStream,
+                InputStream inputStream,
+                OutputStream outputStream,
                 int[] tableDecode
-        ) {
+        ) throws IOException {
             byte[] plainDataBlock = new byte[PLAIN_DATA_BLOCK_SIZE];
             byte[] encodedDataBlock = new byte[ENCODED_DATA_BLOCK_SIZE];
 
             int len;
-            while ((len = byteArrayInputStream.read(encodedDataBlock, 0, ENCODED_DATA_BLOCK_SIZE)) > 0) {
+            while ((len = inputStream.read(encodedDataBlock, 0, ENCODED_DATA_BLOCK_SIZE)) > 0) {
                 long bucketValue0 = getTableValue(tableDecode, encodedDataBlock[0]);
                 long bucketValue1 = getTableValue(tableDecode, encodedDataBlock[1]);
                 long bucketValue2 = getTableValue(tableDecode, encodedDataBlock[2]);
@@ -244,7 +253,7 @@ public class Base32 {
                 int resultBlockSizeInBit = len * 5;
                 int resultBlockSize = resultBlockSizeInBit / 8;
 
-                byteArrayOutputStream.write(plainDataBlock, 0, resultBlockSize);
+                outputStream.write(plainDataBlock, 0, resultBlockSize);
 
                 Arrays.fill(encodedDataBlock, (byte) 0);
             }

@@ -18,13 +18,16 @@ package dev.keiji.util;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 /**
  * Utilities for encoding and decoding the Base64 representation of binary data.
- *
+ * <p>
  * See RFC https://datatracker.ietf.org/doc/html/rfc4648
  * Special thanks to http://www5d.biglobe.ne.jp/stssk/rfc/rfc4648j.html
  */
@@ -126,25 +129,27 @@ public class Base64 {
             ByteArrayInputStream bais = new ByteArrayInputStream(input);
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-            encode(bais, baos, tableEncode);
-
             try {
+                encode(bais, baos, tableEncode);
                 return baos.toString(StandardCharsets.US_ASCII.name());
             } catch (UnsupportedEncodingException e) {
                 return baos.toString();
+            } catch (IOException e) {
+                // ByteArray[Input|Output]Stream never throws IOException
+                return null;
             }
         }
 
         private static void encode(
-                ByteArrayInputStream byteArrayInputStream,
-                ByteArrayOutputStream byteArrayOutputStream,
+                InputStream inputStream,
+                OutputStream outputStream,
                 byte[] tableEncode
-        ) {
+        ) throws IOException {
             byte[] plainDataBlock = new byte[PLAIN_DATA_BLOCK_SIZE];
             byte[] encodedDataBlock = new byte[ENCODED_DATA_BLOCK_SIZE];
 
             int len;
-            while ((len = byteArrayInputStream.read(plainDataBlock, 0, PLAIN_DATA_BLOCK_SIZE)) > 0) {
+            while ((len = inputStream.read(plainDataBlock, 0, PLAIN_DATA_BLOCK_SIZE)) > 0) {
 //                int resultBlockSizeInBit = len * 8;
 //                int resultBlockSize = resultBlockSizeInBit / BIT_WIDTH
 //                        + (resultBlockSizeInBit % BIT_WIDTH == 0 ? 0 : 1);
@@ -160,10 +165,10 @@ public class Base64 {
                 encodedDataBlock[2] = tableEncode[getIndex(value, 6)];
                 encodedDataBlock[3] = tableEncode[getIndex(value, 0)];
 
-                byteArrayOutputStream.write(encodedDataBlock, 0, ENCODED_DATA_BLOCK_SIZE - padSize);
+                outputStream.write(encodedDataBlock, 0, ENCODED_DATA_BLOCK_SIZE - padSize);
 
                 for (int i = 0; i < padSize; i++) {
-                    byteArrayOutputStream.write((byte) PAD);
+                    outputStream.write((byte) PAD);
                 }
 
                 // Clear plainDataBlock.
@@ -211,16 +216,20 @@ public class Base64 {
             ByteArrayInputStream bais = new ByteArrayInputStream(padStrippedStr.getBytes(StandardCharsets.US_ASCII));
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-            decode(bais, baos, tableDecode);
-
-            return baos.toByteArray();
+            try {
+                decode(bais, baos, tableDecode);
+                return baos.toByteArray();
+            } catch (IOException exception) {
+                // ByteArray[Input|Output]Stream never throws IOException
+                return null;
+            }
         }
 
         private static void decode(
-                ByteArrayInputStream byteArrayInputStream,
-                ByteArrayOutputStream byteArrayOutputStream,
+                InputStream byteArrayInputStream,
+                OutputStream byteArrayOutputStream,
                 int[] tableDecode
-        ) {
+        ) throws IOException {
             byte[] plainDataBlock = new byte[PLAIN_DATA_BLOCK_SIZE];
             byte[] encodedDataBlock = new byte[ENCODED_DATA_BLOCK_SIZE];
 

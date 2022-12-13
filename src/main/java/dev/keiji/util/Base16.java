@@ -18,6 +18,9 @@ package dev.keiji.util;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -84,29 +87,31 @@ public class Base16 {
             ByteArrayInputStream bais = new ByteArrayInputStream(input);
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-            encode(bais, baos);
-
             try {
+                encode(bais, baos);
                 return baos.toString(StandardCharsets.US_ASCII.name());
             } catch (UnsupportedEncodingException e) {
                 return baos.toString();
+            } catch (IOException e) {
+                // ByteArray[Input|Output]Stream never throws IOException
+                return null;
             }
         }
 
         private static void encode(
-                ByteArrayInputStream byteArrayInputStream,
-                ByteArrayOutputStream byteArrayOutputStream
-        ) {
+                InputStream inputStream,
+                OutputStream outputStream
+        ) throws IOException {
             byte[] plainDataBlock = new byte[PLAIN_DATA_BLOCK_SIZE];
             byte[] encodedDataBlock = new byte[ENCODED_DATA_BLOCK_SIZE];
 
-            while (byteArrayInputStream.read(plainDataBlock, 0, PLAIN_DATA_BLOCK_SIZE) > 0) {
+            while (inputStream.read(plainDataBlock, 0, PLAIN_DATA_BLOCK_SIZE) > 0) {
                 int value = byteToInt(plainDataBlock[0]);
 
                 encodedDataBlock[0] = TABLE_ENCODE[getIndex(value, 4)];
                 encodedDataBlock[1] = TABLE_ENCODE[getIndex(value, 0)];
 
-                byteArrayOutputStream.write(encodedDataBlock, 0, ENCODED_DATA_BLOCK_SIZE);
+                outputStream.write(encodedDataBlock, 0, ENCODED_DATA_BLOCK_SIZE);
             }
         }
 
@@ -135,23 +140,27 @@ public class Base16 {
             ByteArrayInputStream bais = new ByteArrayInputStream(input.getBytes(StandardCharsets.US_ASCII));
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-            decode(bais, baos);
-
-            return baos.toByteArray();
+            try {
+                decode(bais, baos);
+                return baos.toByteArray();
+            } catch (IOException e) {
+                // ByteArray[Input|Output]Stream never throws IOException
+                return null;
+            }
         }
 
         private static void decode(
-                ByteArrayInputStream byteArrayInputStream,
-                ByteArrayOutputStream byteArrayOutputStream
-        ) {
+                InputStream inputStream,
+                OutputStream outputStream
+        ) throws IOException {
             byte[] encodedDataBlock = new byte[ENCODED_DATA_BLOCK_SIZE];
             byte[] plainDataBlock = new byte[PLAIN_DATA_BLOCK_SIZE];
 
-            while (byteArrayInputStream.read(encodedDataBlock, 0, ENCODED_DATA_BLOCK_SIZE) > 0) {
+            while (inputStream.read(encodedDataBlock, 0, ENCODED_DATA_BLOCK_SIZE) > 0) {
                 int valueHigh = getTableValue(TABLE_DECODE, encodedDataBlock[0]) << 4;
                 int valueLow = getTableValue(TABLE_DECODE, encodedDataBlock[1]);
                 plainDataBlock[0] = (byte) (valueHigh + valueLow);
-                byteArrayOutputStream.write(plainDataBlock, 0, PLAIN_DATA_BLOCK_SIZE);
+                outputStream.write(plainDataBlock, 0, PLAIN_DATA_BLOCK_SIZE);
             }
         }
 
