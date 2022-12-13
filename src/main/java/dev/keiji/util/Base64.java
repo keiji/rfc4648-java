@@ -123,15 +123,15 @@ public class Base64 {
                 throw new IllegalArgumentException("Input data must not be null.");
             }
 
-            ByteArrayInputStream bis = new ByteArrayInputStream(input);
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            ByteArrayInputStream bais = new ByteArrayInputStream(input);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-            encode(bis, bos, tableEncode);
+            encode(bais, baos, tableEncode);
 
             try {
-                return bos.toString(StandardCharsets.US_ASCII.name());
+                return baos.toString(StandardCharsets.US_ASCII.name());
             } catch (UnsupportedEncodingException e) {
-                return bos.toString();
+                return baos.toString();
             }
         }
 
@@ -208,12 +208,12 @@ public class Base64 {
 
             String padStrippedStr = input.substring(0, input.length() - padLength);
 
-            ByteArrayInputStream bis = new ByteArrayInputStream(padStrippedStr.getBytes(StandardCharsets.US_ASCII));
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            ByteArrayInputStream bais = new ByteArrayInputStream(padStrippedStr.getBytes(StandardCharsets.US_ASCII));
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-            decode(bis, bos, tableDecode);
+            decode(bais, baos, tableDecode);
 
-            return bos.toByteArray();
+            return baos.toByteArray();
         }
 
         private static void decode(
