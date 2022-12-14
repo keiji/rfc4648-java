@@ -27,7 +27,7 @@ import java.util.Arrays;
 
 /**
  * Utilities for encoding and decoding the Base16 representation of binary data.
- * <p>
+ *
  * See RFC https://datatracker.ietf.org/doc/html/rfc4648
  * Special thanks to http://www5d.biglobe.ne.jp/stssk/rfc/rfc4648j.html
  */
