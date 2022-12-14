@@ -20,9 +20,11 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InvalidObjectException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
+import java.security.InvalidParameterException;
 import java.util.Arrays;
 
 /**
@@ -76,6 +78,9 @@ public class Base64 {
             TABLE_DECODE[TABLE_ENCODE[i]] = i;
             TABLE_DECODE_URL_SAFE[TABLE_ENCODE_URL_SAFE[i]] = i;
         }
+
+        TABLE_DECODE[PAD] = 0;
+        TABLE_DECODE_URL_SAFE[PAD] = 0;
     }
 
     /**
@@ -89,6 +94,16 @@ public class Base64 {
     }
 
     /**
+     * Base64-encode the given stream data and output encoded data as stream.
+     *
+     * @param inputStream  the data stream to encode
+     * @param outputStream the output stream of the result
+     */
+    public static void encode(InputStream inputStream, OutputStream outputStream) throws IOException {
+        Encoder.encode(inputStream, outputStream, TABLE_ENCODE);
+    }
+
+    /**
      * Base64 url and filename safe encode the given data and return a newly allocated String with the result.
      *
      * @param input the data to encode
@@ -96,6 +111,16 @@ public class Base64 {
      */
     public static String encodeUrlSafe(byte[] input) {
         return Encoder.encode(input, TABLE_ENCODE_URL_SAFE);
+    }
+
+    /**
+     * Base64 url and filename safe encode the given stream data and output encoded data as stream.
+     *
+     * @param inputStream  the data stream to encode
+     * @param outputStream the output stream of the result
+     */
+    public static void encodeUrlSafe(InputStream inputStream, OutputStream outputStream) throws IOException {
+        Encoder.encode(inputStream, outputStream, TABLE_ENCODE_URL_SAFE);
     }
 
     /**
@@ -109,6 +134,16 @@ public class Base64 {
     }
 
     /**
+     * Decode the Base64-encoded data in input and output decoded data as stream.
+     *
+     * @param inputStream  the data stream to encode
+     * @param outputStream the output stream of the result
+     */
+    public static void decode(InputStream inputStream, OutputStream outputStream) throws IOException {
+        Decoder.decode(inputStream, outputStream, TABLE_DECODE, true);
+    }
+
+    /**
      * Decode the Base64 url and filename safe encoded data in input and return the data in a new byte array.
      *
      * @param input the data to decode
@@ -116,6 +151,16 @@ public class Base64 {
      */
     public static byte[] decodeUrlSafe(String input) {
         return Decoder.decode(input, TABLE_DECODE_URL_SAFE, false);
+    }
+
+    /**
+     * Decode the Base64 url and filename safe encoded data in input output decoded data as stream.
+     *
+     * @param inputStream  the data stream to encode
+     * @param outputStream the output stream of the result
+     */
+    public static void decodeUrlSafe(InputStream inputStream, OutputStream outputStream) throws IOException {
+        Decoder.decode(inputStream, outputStream, TABLE_DECODE_URL_SAFE, false);
     }
 
     private static class Encoder {
@@ -145,17 +190,18 @@ public class Base64 {
                 OutputStream outputStream,
                 byte[] tableEncode
         ) throws IOException {
+            if (inputStream == null) {
+                throw new InvalidParameterException("inputStream must not be null.");
+            }
+            if (outputStream == null) {
+                throw new InvalidParameterException("outputStream must not be null.");
+            }
+
             byte[] plainDataBlock = new byte[PLAIN_DATA_BLOCK_SIZE];
             byte[] encodedDataBlock = new byte[ENCODED_DATA_BLOCK_SIZE];
 
             int len;
             while ((len = inputStream.read(plainDataBlock, 0, PLAIN_DATA_BLOCK_SIZE)) > 0) {
-//                int resultBlockSizeInBit = len * 8;
-//                int resultBlockSize = resultBlockSizeInBit / BIT_WIDTH
-//                        + (resultBlockSizeInBit % BIT_WIDTH == 0 ? 0 : 1);
-//                int padSize = ENCODED_DATA_BLOCK_SIZE - resultBlockSize;
-
-                // Simplified for Base64
                 int padSize = PLAIN_DATA_BLOCK_SIZE - len;
 
                 int value = getIntFromBlock(plainDataBlock);
@@ -217,7 +263,7 @@ public class Base64 {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
             try {
-                decode(bais, baos, tableDecode);
+                decode(bais, baos, tableDecode, expectPadding);
                 return baos.toByteArray();
             } catch (IOException exception) {
                 // ByteArray[Input|Output]Stream never throws IOException
@@ -226,22 +272,36 @@ public class Base64 {
         }
 
         private static void decode(
-                InputStream byteArrayInputStream,
-                OutputStream byteArrayOutputStream,
-                int[] tableDecode
+                InputStream inputStream,
+                OutputStream outputStream,
+                int[] tableDecode,
+                boolean expectPadding
         ) throws IOException {
+            if (inputStream == null) {
+                throw new IllegalArgumentException("inputStream must be not null.");
+            }
+            if (outputStream == null) {
+                throw new IllegalArgumentException("outputStream must be not null.");
+            }
+
             byte[] plainDataBlock = new byte[PLAIN_DATA_BLOCK_SIZE];
             byte[] encodedDataBlock = new byte[ENCODED_DATA_BLOCK_SIZE];
 
             int len;
-            while ((len = byteArrayInputStream.read(encodedDataBlock, 0, ENCODED_DATA_BLOCK_SIZE)) > 0) {
-//                int resultBlockSizeInBit = len * BIT_WIDTH;
-//                int resultBlockSize = resultBlockSizeInBit / BIT_WIDTH
-//                        + (resultBlockSizeInBit % BIT_WIDTH == 0 ? 0 : 1);
-//                int padSize = ENCODED_DATA_BLOCK_SIZE - resultBlockSize;
-
-                // Simplified for Base64
+            while ((len = inputStream.read(encodedDataBlock, 0, ENCODED_DATA_BLOCK_SIZE)) > 0) {
                 int padSize = ENCODED_DATA_BLOCK_SIZE - len;
+                if (expectPadding) {
+                    if (encodedDataBlock[0] == PAD) {
+//                        padSize = 4;
+                        continue;
+                    } else if (encodedDataBlock[1] == PAD) {
+                        padSize = 3;
+                    } else if (encodedDataBlock[2] == PAD) {
+                        padSize = 2;
+                    } else if (encodedDataBlock[3] == PAD) {
+                        padSize = 1;
+                    }
+                }
 
                 int bucketValue0 = getTableValue(tableDecode, encodedDataBlock[0]);
                 int bucketValue1 = getTableValue(tableDecode, encodedDataBlock[1]);
@@ -255,7 +315,7 @@ public class Base64 {
 
                 convertToBlock(value, plainDataBlock);
 
-                byteArrayOutputStream.write(plainDataBlock, 0, PLAIN_DATA_BLOCK_SIZE - padSize);
+                outputStream.write(plainDataBlock, 0, PLAIN_DATA_BLOCK_SIZE - padSize);
 
                 Arrays.fill(encodedDataBlock, (byte) 0);
             }
