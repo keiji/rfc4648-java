@@ -67,6 +67,16 @@ public class Base16 {
     }
 
     /**
+     * Base16-encode the given stream data and output encoded data as stream.
+     *
+     * @param inputStream  the data stream to encode
+     * @param outputStream the output stream of the result
+     */
+    public static void encode(InputStream inputStream, OutputStream outputStream) throws IOException {
+        Encoder.encode(inputStream, outputStream);
+    }
+
+    /**
      * Decode the Base16-encoded data in input and return the data in a new byte array.
      *
      * @param input the data to decode
@@ -74,6 +84,16 @@ public class Base16 {
      */
     public static byte[] decode(String input) {
         return Decoder.decode(input);
+    }
+
+    /**
+     * Decode the Base16-encoded stream data in input and output encoded data as stream.
+     *
+     * @param inputStream  the data stream to encode
+     * @param outputStream the output stream of the result
+     */
+    public static void decode(InputStream inputStream, OutputStream outputStream) throws IOException {
+        Decoder.decode(inputStream, outputStream);
     }
 
     private static class Encoder {
@@ -102,6 +122,13 @@ public class Base16 {
                 InputStream inputStream,
                 OutputStream outputStream
         ) throws IOException {
+            if (inputStream == null) {
+                throw new IllegalArgumentException("inputStream must be not null.");
+            }
+            if (outputStream == null) {
+                throw new IllegalArgumentException("outputStream must be not null.");
+            }
+
             byte[] plainDataBlock = new byte[PLAIN_DATA_BLOCK_SIZE];
             byte[] encodedDataBlock = new byte[ENCODED_DATA_BLOCK_SIZE];
 
@@ -153,6 +180,13 @@ public class Base16 {
                 InputStream inputStream,
                 OutputStream outputStream
         ) throws IOException {
+            if (inputStream == null) {
+                throw new IllegalArgumentException("inputStream must be not null.");
+            }
+            if (outputStream == null) {
+                throw new IllegalArgumentException("outputStream must be not null.");
+            }
+
             byte[] encodedDataBlock = new byte[ENCODED_DATA_BLOCK_SIZE];
             byte[] plainDataBlock = new byte[PLAIN_DATA_BLOCK_SIZE];
 

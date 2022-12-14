@@ -68,6 +68,9 @@ public class Base32 {
             TABLE_DECODE[TABLE_ENCODE[i]] = i;
             TABLE_DECODE_EXTENDED_HEX[TABLE_ENCODE_EXTENDED_HEX[i]] = i;
         }
+
+        TABLE_DECODE[PAD] = 0;
+        TABLE_DECODE_EXTENDED_HEX[PAD] = 0;
     }
 
     /**
@@ -81,6 +84,16 @@ public class Base32 {
     }
 
     /**
+     * Base32-encode the given stream data and output encoded data as stream.
+     *
+     * @param inputStream  the data stream to encode
+     * @param outputStream the output stream of the result
+     */
+    public static void encode(InputStream inputStream, OutputStream outputStream) throws IOException {
+        Encoder.encode(inputStream, outputStream, TABLE_ENCODE);
+    }
+
+    /**
      * Decode the Base32-encoded data in input and return the data in a new byte array.
      *
      * @param input the data to decode
@@ -88,6 +101,16 @@ public class Base32 {
      */
     public static byte[] decode(String input) {
         return Decoder.decode(input, TABLE_DECODE);
+    }
+
+    /**
+     * Decode the Base32-encoded data in input and output decoded data as stream.
+     *
+     * @param inputStream  the data stream to encode
+     * @param outputStream the output stream of the result
+     */
+    public static void decode(InputStream inputStream, OutputStream outputStream) throws IOException {
+        Decoder.decode(inputStream, outputStream, TABLE_DECODE, true);
     }
 
     /**
@@ -101,6 +124,16 @@ public class Base32 {
     }
 
     /**
+     * Extended Hex Base32-encode the given stream data and output encoded data as stream.
+     *
+     * @param inputStream  the data stream to encode
+     * @param outputStream the output stream of the result
+     */
+    public static void encodeExtendedHex(InputStream inputStream, OutputStream outputStream) throws IOException {
+        Encoder.encode(inputStream, outputStream, TABLE_ENCODE_EXTENDED_HEX);
+    }
+
+    /**
      * Decode the Extended Hex Base32-encoded data in input and return the data in a new byte array.
      *
      * @param input the data to decode
@@ -108,6 +141,16 @@ public class Base32 {
      */
     public static byte[] decodeExtendedHex(String input) {
         return Decoder.decode(input, TABLE_DECODE_EXTENDED_HEX);
+    }
+
+    /**
+     * Decode the Extended Hex Base32-encoded data in input and return the data in a new byte array.
+     *
+     * @param inputStream  the data stream to encode
+     * @param outputStream the output stream of the result
+     */
+    public static void decodeExtendedHex(InputStream inputStream, OutputStream outputStream) throws IOException {
+        Decoder.decode(inputStream, outputStream, TABLE_DECODE_EXTENDED_HEX, false);
     }
 
     private static class Encoder {
@@ -138,6 +181,13 @@ public class Base32 {
                 OutputStream outputStream,
                 byte[] tableEncode
         ) throws IOException {
+            if (inputStream == null) {
+                throw new IllegalArgumentException("inputStream must be not null.");
+            }
+            if (outputStream == null) {
+                throw new IllegalArgumentException("outputStream must be not null.");
+            }
+
             byte[] plainDataBlock = new byte[PLAIN_DATA_BLOCK_SIZE];
             byte[] encodedDataBlock = new byte[ENCODED_DATA_BLOCK_SIZE];
 
@@ -212,7 +262,7 @@ public class Base32 {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
             try {
-                decode(bais, baos, tableDecode);
+                decode(bais, baos, tableDecode, true);
                 return baos.toByteArray();
             } catch (IOException e) {
                 // ByteArray[Input|Output]Stream never throws IOException
@@ -223,13 +273,45 @@ public class Base32 {
         private static void decode(
                 InputStream inputStream,
                 OutputStream outputStream,
-                int[] tableDecode
+                int[] tableDecode,
+                boolean expectPadding
         ) throws IOException {
+            if (inputStream == null) {
+                throw new IllegalArgumentException("inputStream must be not null.");
+            }
+            if (outputStream == null) {
+                throw new IllegalArgumentException("outputStream must be not null.");
+            }
+
             byte[] plainDataBlock = new byte[PLAIN_DATA_BLOCK_SIZE];
             byte[] encodedDataBlock = new byte[ENCODED_DATA_BLOCK_SIZE];
 
             int len;
             while ((len = inputStream.read(encodedDataBlock, 0, ENCODED_DATA_BLOCK_SIZE)) > 0) {
+                int padSize = 0;
+                if (expectPadding) {
+                    if (encodedDataBlock[0] == PAD) {
+                        continue;
+                    } else if (encodedDataBlock[1] == PAD) {
+                        padSize = 7;
+                    } else if (encodedDataBlock[2] == PAD) {
+                        padSize = 6;
+                    } else if (encodedDataBlock[3] == PAD) {
+                        padSize = 5;
+                    } else if (encodedDataBlock[4] == PAD) {
+                        padSize = 4;
+                    } else if (encodedDataBlock[5] == PAD) {
+                        padSize = 3;
+                    } else if (encodedDataBlock[6] == PAD) {
+                        padSize = 2;
+                    } else if (encodedDataBlock[7] == PAD) {
+                        padSize = 1;
+                    }
+                }
+
+                int resultBlockSizeInBit = (len - padSize) * 5;
+                int resultBlockSize = resultBlockSizeInBit / 8;
+
                 long bucketValue0 = getTableValue(tableDecode, encodedDataBlock[0]);
                 long bucketValue1 = getTableValue(tableDecode, encodedDataBlock[1]);
                 long bucketValue2 = getTableValue(tableDecode, encodedDataBlock[2]);
@@ -249,9 +331,6 @@ public class Base32 {
                         + (bucketValue7);
 
                 convertToBlock(value, plainDataBlock);
-
-                int resultBlockSizeInBit = len * 5;
-                int resultBlockSize = resultBlockSizeInBit / 8;
 
                 outputStream.write(plainDataBlock, 0, resultBlockSize);
 
