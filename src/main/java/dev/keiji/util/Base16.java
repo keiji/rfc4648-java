@@ -18,13 +18,16 @@ package dev.keiji.util;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 /**
  * Utilities for encoding and decoding the Base16 representation of binary data.
- * <p>
+ *
  * See RFC https://datatracker.ietf.org/doc/html/rfc4648
  * Special thanks to http://www5d.biglobe.ne.jp/stssk/rfc/rfc4648j.html
  */
@@ -64,6 +67,16 @@ public class Base16 {
     }
 
     /**
+     * Base16-encode the given stream data and output encoded data as stream.
+     *
+     * @param inputStream  the data stream to encode
+     * @param outputStream the output stream of the result
+     */
+    public static void encode(InputStream inputStream, OutputStream outputStream) throws IOException {
+        Encoder.encode(inputStream, outputStream);
+    }
+
+    /**
      * Decode the Base16-encoded data in input and return the data in a new byte array.
      *
      * @param input the data to decode
@@ -71,6 +84,16 @@ public class Base16 {
      */
     public static byte[] decode(String input) {
         return Decoder.decode(input);
+    }
+
+    /**
+     * Decode the Base16-encoded stream data in input and output encoded data as stream.
+     *
+     * @param inputStream  the data stream to encode
+     * @param outputStream the output stream of the result
+     */
+    public static void decode(InputStream inputStream, OutputStream outputStream) throws IOException {
+        Decoder.decode(inputStream, outputStream);
     }
 
     private static class Encoder {
@@ -81,32 +104,41 @@ public class Base16 {
                 throw new IllegalArgumentException("Input data must not be null.");
             }
 
-            ByteArrayInputStream bis = new ByteArrayInputStream(input);
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-
-            encode(bis, bos);
+            ByteArrayInputStream bais = new ByteArrayInputStream(input);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
             try {
-                return bos.toString(StandardCharsets.US_ASCII.name());
+                encode(bais, baos);
+                return baos.toString(StandardCharsets.US_ASCII.name());
             } catch (UnsupportedEncodingException e) {
-                return bos.toString();
+                return baos.toString();
+            } catch (IOException e) {
+                // ByteArray[Input|Output]Stream never throws IOException
+                return null;
             }
         }
 
         private static void encode(
-                ByteArrayInputStream byteArrayInputStream,
-                ByteArrayOutputStream byteArrayOutputStream
-        ) {
+                InputStream inputStream,
+                OutputStream outputStream
+        ) throws IOException {
+            if (inputStream == null) {
+                throw new IllegalArgumentException("inputStream must be not null.");
+            }
+            if (outputStream == null) {
+                throw new IllegalArgumentException("outputStream must be not null.");
+            }
+
             byte[] plainDataBlock = new byte[PLAIN_DATA_BLOCK_SIZE];
             byte[] encodedDataBlock = new byte[ENCODED_DATA_BLOCK_SIZE];
 
-            while (byteArrayInputStream.read(plainDataBlock, 0, PLAIN_DATA_BLOCK_SIZE) > 0) {
+            while (inputStream.read(plainDataBlock, 0, PLAIN_DATA_BLOCK_SIZE) > 0) {
                 int value = byteToInt(plainDataBlock[0]);
 
                 encodedDataBlock[0] = TABLE_ENCODE[getIndex(value, 4)];
                 encodedDataBlock[1] = TABLE_ENCODE[getIndex(value, 0)];
 
-                byteArrayOutputStream.write(encodedDataBlock, 0, ENCODED_DATA_BLOCK_SIZE);
+                outputStream.write(encodedDataBlock, 0, ENCODED_DATA_BLOCK_SIZE);
             }
         }
 
@@ -132,26 +164,37 @@ public class Base16 {
                 throw new IllegalArgumentException("Input string length must be divisible by 2.");
             }
 
-            ByteArrayInputStream bis = new ByteArrayInputStream(input.getBytes(StandardCharsets.US_ASCII));
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            ByteArrayInputStream bais = new ByteArrayInputStream(input.getBytes(StandardCharsets.US_ASCII));
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-            decode(bis, bos);
-
-            return bos.toByteArray();
+            try {
+                decode(bais, baos);
+                return baos.toByteArray();
+            } catch (IOException e) {
+                // ByteArray[Input|Output]Stream never throws IOException
+                return null;
+            }
         }
 
         private static void decode(
-                ByteArrayInputStream byteArrayInputStream,
-                ByteArrayOutputStream byteArrayOutputStream
-        ) {
+                InputStream inputStream,
+                OutputStream outputStream
+        ) throws IOException {
+            if (inputStream == null) {
+                throw new IllegalArgumentException("inputStream must be not null.");
+            }
+            if (outputStream == null) {
+                throw new IllegalArgumentException("outputStream must be not null.");
+            }
+
             byte[] encodedDataBlock = new byte[ENCODED_DATA_BLOCK_SIZE];
             byte[] plainDataBlock = new byte[PLAIN_DATA_BLOCK_SIZE];
 
-            while (byteArrayInputStream.read(encodedDataBlock, 0, ENCODED_DATA_BLOCK_SIZE) > 0) {
+            while (inputStream.read(encodedDataBlock, 0, ENCODED_DATA_BLOCK_SIZE) > 0) {
                 int valueHigh = getTableValue(TABLE_DECODE, encodedDataBlock[0]) << 4;
                 int valueLow = getTableValue(TABLE_DECODE, encodedDataBlock[1]);
                 plainDataBlock[0] = (byte) (valueHigh + valueLow);
-                byteArrayOutputStream.write(plainDataBlock, 0, PLAIN_DATA_BLOCK_SIZE);
+                outputStream.write(plainDataBlock, 0, PLAIN_DATA_BLOCK_SIZE);
             }
         }
 
